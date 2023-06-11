@@ -31,6 +31,13 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <returns></returns>
         /// <exception cref="TimeNegativeException"></exception>
         public static double CalculateAngleBeta(double b, double w, double t) => t > 0 ? b * Math.Sin(w * t) : throw new TimeNegativeException("Отрицательное значение времени");
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="degrees"></param>
+        /// <returns></returns>
+        public static double ConvertDegreesToRadians(int degrees) => Math.PI / 180 * degrees;
 
         /// <summary>
         /// 
