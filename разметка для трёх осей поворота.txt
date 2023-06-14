@@ -1,0 +1,24 @@
+<GeometryModel3D.Transform>
+                                    <Transform3DGroup>
+                                        <Transform3DGroup.Children>
+                                            <RotateTransform3D>
+                                                <RotateTransform3D.Rotation>
+                                                    <AxisAngleRotation3D Axis="0,1,0" 
+                                                        Angle="0" x:Name="rot"/>
+                                                </RotateTransform3D.Rotation>
+                                            </RotateTransform3D>
+                                            <RotateTransform3D>
+                                                <RotateTransform3D.Rotation>
+                                                    <AxisAngleRotation3D Axis="0,0,1" 
+                                                        Angle="0" x:Name="rot1"/>
+                                                </RotateTransform3D.Rotation>
+                                            </RotateTransform3D>
+                                            <RotateTransform3D>
+                                                <RotateTransform3D.Rotation>
+                                                    <AxisAngleRotation3D Axis="1,0,0" 
+                                                        Angle="0" x:Name="rot2"/>
+                                                </RotateTransform3D.Rotation>
+                                            </RotateTransform3D>
+                                        </Transform3DGroup.Children>
+                                    </Transform3DGroup>
+                                </GeometryModel3D.Transform>

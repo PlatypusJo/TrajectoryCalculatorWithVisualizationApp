@@ -10,6 +10,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using OxyPlot;
@@ -21,13 +22,13 @@ namespace TrajectoryOfSensorVisualization.View
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ViewModel.MainWindowViewModel viewModel;
+        private ViewModel.PlotsViewModel viewModel;
 
         public MainWindow()
         {
-            viewModel = new ViewModel.MainWindowViewModel();
+            viewModel = new ViewModel.PlotsViewModel();
             DataContext = viewModel;
-
+            
             InitializeComponent();
         }
     }

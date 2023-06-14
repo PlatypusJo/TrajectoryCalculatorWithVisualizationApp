@@ -37,7 +37,7 @@ namespace TrajectoryOfSensorVisualization.Model
         /// </summary>
         /// <param name="degrees"></param>
         /// <returns></returns>
-        public static double ConvertDegreesToRadians(int degrees) => Math.PI / 180 * degrees;
+        public static double ConvertDegreesToRadians(double degrees) => Math.PI / 180 * degrees;
 
         /// <summary>
         /// 
