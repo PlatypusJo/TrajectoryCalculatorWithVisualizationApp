@@ -1,9 +1,13 @@
-﻿using OxyPlot;
+﻿using Microsoft.VisualBasic.FileIO;
+using OxyPlot;
 using OxyPlot.Axes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+//using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -15,29 +19,215 @@ namespace TrajectoryOfSensorVisualization.ViewModel
 {
     public class PlotsViewModel : INotifyPropertyChanged
     {
-        private PlotModel plotModelXYPlane;
-        private PlotModel plotModelXZPlane;
-        private PlotModel plotModelYZPlane;
+        private PlaneModel planeXY;
+        private PlaneModel planeXZ;
+        private PlaneModel planeYZ;
         private Point3DCollection pointsInSpace;
         private Point3DCollection pointsInSpaceToDisplay3DPlots;
         private Int32Collection triangleIndices;
 
-        public PlotModel PlotModelXYPlane
+        
+
+        public PlotsViewModel()
         {
-            get { return plotModelXYPlane; }
-            set { plotModelXYPlane = value; OnPropertyChanged(nameof(PlotModelXYPlane)); }
+            PlaneXY = new(OxyColors.Green, "Y", OxyColors.Red, "X", -0.5, 0.5);
+            PlaneXZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -0.5, 0.5);
+            PlaneYZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -0.5, 0.5);
+            pointsInSpace = new()
+            {
+                new Point3D(0, 0, 0.5)
+            };
+            pointsInSpaceToDisplay3DPlots = new()
+            {
+                new Point3D(0, 0, 0.5)
+            };
+            triangleIndices = new();
+            GenerateData();
+            LoadData();
+            //CalculateIntegral();
+            //double d = 180;
+            //d.ToRadians();
+            //Vector3D v = new(0, 1, 0);
+            //Vector3D v1 = new(1, 0, 0);
+            //Quaternion q = new(v1, Math.PI / 180 * 90);
+            //Vector3D v2 = TrajectoryCalculator.RotateVector3D(v, q);
         }
 
-        public PlotModel PlotModelXZPlane
+        #region Methods For Work With ViewModel Data
+        public void CalculateIntegral()
         {
-            get { return plotModelXZPlane; }
-            set { plotModelXZPlane = value; OnPropertyChanged(nameof(PlotModelXZPlane)); }
+            List<Vector3D> accelerationVectors = new();
+            List<Quaternion> quaternions = new();
+            
+            using (StreamReader reader = new(@"TestFile.csv"))
+            {
+                double gLength = Convert.ToDouble(reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None)[0]);
+                while(!reader.EndOfStream)
+                {
+                    string line = reader.ReadLine();
+                    string[] separators = new string[] { ";" };
+                    line = line.Replace('.', ',');
+                    string[] data = line.Split(separators, StringSplitOptions.None);
+                    accelerationVectors.Add(new() { X = Convert.ToDouble(data[0]), Y = Convert.ToDouble(data[1]), Z = Convert.ToDouble(data[2]) });
+                    quaternions.Add(new() { X = Convert.ToDouble(data[4]), Y = Convert.ToDouble(data[5]), Z = Convert.ToDouble(data[6]), W = Convert.ToDouble(data[3]) });
+                }
+                accelerationVectors = RotateVectors(accelerationVectors, quaternions, gLength);
+            }
+            Vector3D v = TrajectoryCalculator.CalculateDisplacementWithIntegral(accelerationVectors, 100, 200);
+            Debug.WriteLine($"Интеграл равен: {v.X}, {v.Y}, {v.Z}");
         }
 
-        public PlotModel PlotModelYZPlane
+        public List<Vector3D> RotateVectors(List<Vector3D> axellerateVectors, List<Quaternion> quaternions, double gLength)
         {
-            get { return plotModelYZPlane; }
-            set { plotModelYZPlane = value; OnPropertyChanged(nameof(PlotModelYZPlane)); }
+            List<Vector3D> result = new List<Vector3D>();
+            for (int i = 0; i < axellerateVectors.Count; i++)
+            {
+                Vector3D temporaryVector = new(0.0, 1.0, 0.0);
+                axellerateVectors[i] -= temporaryVector * gLength;
+            }
+            for (int i = 0; i < axellerateVectors.Count; i++)
+            {
+                result.Add(TrajectoryCalculator.RotateVector3D(axellerateVectors[i], quaternions[i]));
+            }
+            return result;
+        }
+
+        public void GenerateData()
+        {
+            Random random = new Random();
+            double radius = 0.5;
+            List<Vector3D> pointsForApproximation = new()
+            {
+                new Vector3D(0, 0, radius),
+            };
+            List<(double alphaAngle, double betaAngle)> angles = new()
+            {
+                new (0, 0),
+            };
+            int k = 0;
+            for (double t = 0.01; t < 0.1; t += 0.01)
+            {
+                double w1 = random.NextDouble() * 500.0 + 1.0;
+                double w2 = random.NextDouble() * 500.0 + 1.0;
+                double a = random.NextDouble() * 140.0 + 1.0;
+                double b = random.NextDouble() * 140.0 + 1.0;
+                
+                double alphaAngle = TrajectoryCalculator.CalculateAngleAlpha(a, w1, t);
+                double betaAngle = TrajectoryCalculator.CalculateAngleBeta(b, w2, t); // Math.PI / 180 * 63
+                angles.Add((alphaAngle, betaAngle));
+                pointsForApproximation.Add(TrajectoryCalculator.CalculateLocationInSpace(radius, alphaAngle, betaAngle));
+                if (pointsForApproximation.Count == 2)
+                {
+                    CalculateTrajectory(pointsForApproximation, angles, radius, ref k);
+                    pointsForApproximation.RemoveAt(0);
+                    angles.RemoveAt(0);
+                }
+            }
+        }
+
+        public void CalculateTrajectory(List<Vector3D> pointsForApproximation, List<(double alphaAngle, double betaAngle)> angles, double radius, ref int k)
+        {
+            int countStepsAlpha = (int)((angles[1].alphaAngle - angles[0].alphaAngle) / 0.1);
+            int countStepsBeta = (int)((angles[1].betaAngle - angles[0].betaAngle) / 0.1);
+            double stepAlpha = countStepsBeta < 0 ? -0.1 : 0.1;
+            double stepBeta = countStepsBeta < 0 ? -0.1 : 0.1;
+            //int countStepsAlpha = 100; 
+            //int countStepsBeta = 100;
+            //double stepAlpha = (angles[1].alphaAngle - angles[0].alphaAngle) / 100.0;
+            //double stepBeta = (angles[1].betaAngle - angles[0].betaAngle) / 100.0;
+            double currentAlphaAngle = angles[0].alphaAngle + stepAlpha;
+            double currentBetaAngle = angles[0].betaAngle + stepBeta;
+            pointsInSpace.Add((Point3D)pointsForApproximation.First());
+            pointsInSpaceToDisplay3DPlots.Add((Point3D)pointsForApproximation.First());
+            pointsInSpaceToDisplay3DPlots.Add(new Point3D(pointsForApproximation.First().X, pointsForApproximation.First().Y - 0.02, pointsForApproximation.First().Z));
+            triangleIndices.Add(k);
+            triangleIndices.Add(k + 1);
+            k++;
+            for (int i = 0, j = 0; i < Math.Abs(countStepsAlpha) || j < Math.Abs(countStepsBeta); i++, j++, k++) // до 30 по i без j выводит дугу 
+            {
+                Vector3D currentPointInSpace = TrajectoryCalculator.CalculateLocationInSpace(radius, currentAlphaAngle, currentBetaAngle);
+                pointsInSpace.Add((Point3D)currentPointInSpace);
+                pointsInSpaceToDisplay3DPlots.Add((Point3D)currentPointInSpace);
+                pointsInSpaceToDisplay3DPlots.Add(new Point3D(currentPointInSpace.X, currentPointInSpace.Y - 0.02, currentPointInSpace.Z));
+                triangleIndices.Add(k);
+                triangleIndices.Add(k - 1); 
+                triangleIndices.Add(k + 1);
+                triangleIndices.Add(k);
+                triangleIndices.Add(k);
+                triangleIndices.Add(k + 1);
+                k++;
+                if (i < Math.Abs(countStepsAlpha))
+                {
+                    currentAlphaAngle += stepAlpha;
+                }
+                if (j < Math.Abs(countStepsBeta))
+                {
+                    currentBetaAngle += stepBeta;
+                }
+            }
+            pointsInSpace.Add((Point3D)pointsForApproximation.Last());
+            pointsInSpaceToDisplay3DPlots.Add((Point3D)pointsForApproximation.Last());
+            pointsInSpaceToDisplay3DPlots.Add(new Point3D(pointsForApproximation.Last().X, pointsForApproximation.Last().Y - 0.02, pointsForApproximation.Last().Z));
+            triangleIndices.Add(k);
+            triangleIndices.Add(k - 1);
+            triangleIndices.Add(k + 1);
+            triangleIndices.Add(k);
+            triangleIndices.Add(k);
+            triangleIndices.Add(k + 1);
+            k++;
+        }
+
+        #region Find trajectory with approximation
+        //public void CalculateTrajectory(List<Vector3D> pointsForApproximation, ref int k)
+        //{
+        //    for (double t = 0.0; t < 1.0; t += 0.01, k++)
+        //    {
+        //        Vector3D approximatedPoint = TrajectoryCalculator.Approximate(pointsForApproximation[0], pointsForApproximation[1], pointsForApproximation[2], pointsForApproximation[3], t);
+        //        pointsInSpace.Add((Point3D)approximatedPoint);
+        //        pointsInSpaceToDisplay3DPlots.Add((Point3D)approximatedPoint);
+        //        pointsInSpaceToDisplay3DPlots.Add(new Point3D(approximatedPoint.X, approximatedPoint.Y - 0.02, approximatedPoint.Z));
+        //        if (k > 0)
+        //        {
+        //            triangleIndices.Add(k);
+        //            triangleIndices.Add(k - 1);
+        //            triangleIndices.Add(k + 1);
+        //            triangleIndices.Add(k);
+        //        }
+        //        triangleIndices.Add(k);
+        //        triangleIndices.Add(k + 1);
+        //        k++;
+        //    }
+        //}
+        #endregion
+        #endregion
+
+        public void LoadData()
+        {
+            foreach(Point3D pointInSpace in pointsInSpace)
+            {
+                PlaneXY.AddDataPoint(new(pointInSpace.X, pointInSpace.Y));
+                PlaneXZ.AddDataPoint(new(pointInSpace.X, pointInSpace.Z));
+                PlaneYZ.AddDataPoint(new(pointInSpace.Y, pointInSpace.Z));
+            }
+        }
+
+        #region Properties
+        public PlaneModel PlaneXY
+        {
+            get { return planeXY; }
+            set { planeXY = value; OnPropertyChanged(nameof(PlaneXY)); }
+        }
+
+        public PlaneModel PlaneXZ
+        {
+            get { return planeXZ; }
+            set { planeXZ = value; OnPropertyChanged(nameof(PlaneXZ)); }
+        }
+
+        public PlaneModel PlaneYZ
+        {
+            get { return planeYZ; }
+            set { planeYZ = value; OnPropertyChanged(nameof(PlaneYZ)); }
         }
 
         public Point3DCollection Points
@@ -49,215 +239,7 @@ namespace TrajectoryOfSensorVisualization.ViewModel
         {
             get { return triangleIndices; }
         }
-
-        public PlotsViewModel()
-        {
-            PlotModelXYPlane = new PlotModel();
-            PlotModelXZPlane = new PlotModel();
-            PlotModelYZPlane = new PlotModel();
-            pointsInSpace = new()
-            {
-                new Point3D(0, 0, 0)
-            };
-            pointsInSpaceToDisplay3DPlots = new()
-            {
-                new Point3D(0, 0, 0)
-            };
-            triangleIndices = new();
-            SetUpModelXY();
-            SetUpModelXZ();
-            SetUpModelYZ();
-            GenerateData();
-            LoadData();
-        }
-
-        public void GenerateData()
-        {
-            Random random = new Random();
-            double radius = 0.5;
-            Point3D sensorLocation = new();
-            int k = 0;
-            for (double t = 0.01; t < 10; t += 0.01, k++)
-            {
-
-                double w1 = random.NextDouble() * 500.0 + 1.0;
-                double w2 = random.NextDouble() * 500.0 + 1.0;
-                double a = random.NextDouble() * 140.0 + 1.0;
-                double b = random.NextDouble() * 140.0 + 1.0;
-                double alphaAngle = TrajectoryCalculator.CalculateAngleAlpha(a, w1, t);
-                double betaAngle = TrajectoryCalculator.CalculateAngleBeta(b, w2, t); // Math.PI / 180 * 63
-                TrajectoryCalculator.CalculateLocationInSpace(ref sensorLocation, radius, alphaAngle, betaAngle);
-                pointsInSpace.Add(sensorLocation);
-                pointsInSpaceToDisplay3DPlots.Add(sensorLocation);
-                pointsInSpaceToDisplay3DPlots.Add(new Point3D(sensorLocation.X, sensorLocation.Y - 0.02, sensorLocation.Z));
-                if (k > 0)
-                {
-                    triangleIndices.Add(k);
-                    triangleIndices.Add(k - 1);
-                    triangleIndices.Add(k + 1);
-                    triangleIndices.Add(k);
-                }
-                triangleIndices.Add(k);
-                triangleIndices.Add(k + 1);
-                k++;
-            }
-        }
-
-        public void LoadData()
-        {
-            var lineXY = new OxyPlot.Series.LineSeries()
-            {
-                Color = OxyColor.FromRgb(29, 172, 214),
-                StrokeThickness = 1,
-                MarkerSize = 2,
-                MarkerType = MarkerType.Circle
-            };
-            var lineXZ = new OxyPlot.Series.LineSeries()
-            {
-                Color = OxyColor.FromRgb(29, 172, 214),
-                StrokeThickness = 1,
-                MarkerSize = 2,
-                MarkerType = MarkerType.Circle
-            };
-            var lineYZ = new OxyPlot.Series.LineSeries()
-            {
-                Color = OxyColor.FromRgb(29, 172, 214),
-                StrokeThickness = 1,
-                MarkerSize = 2,
-                MarkerType = MarkerType.Circle
-            };
-            foreach(Point3D pointInSpace in pointsInSpace)
-            {
-                lineXY.Points.Add(new DataPoint(pointInSpace.X, pointInSpace.Y));
-                lineXZ.Points.Add(new DataPoint(pointInSpace.X, pointInSpace.Z));
-                lineYZ.Points.Add(new DataPoint(pointInSpace.Y, pointInSpace.Z));
-            }
-            PlotModelXYPlane.Series.Add(lineXY);
-            PlotModelXZPlane.Series.Add(lineXZ);
-            PlotModelYZPlane.Series.Add(lineYZ);
-        }
-
-        public void SetUpModelXY()
-        {
-            var xAxis = new LinearAxis()
-            {
-                AxislineThickness = 3,
-                MinorTickSize = 4,
-                MajorTickSize = 7,
-                AxislineStyle = LineStyle.Solid,
-                Position = AxisPosition.Bottom,
-                Minimum = -0.5,
-                Maximum = 0.5,
-                //PositionAtZeroCrossing = true,
-                TicklineColor = OxyColors.Red,
-                AxislineColor = OxyColors.Red,
-                TextColor = OxyColors.Red,
-                MajorGridlineStyle = LineStyle.Solid, 
-                MinorGridlineStyle = LineStyle.Solid, 
-                Title = "X",
-                TitleColor = OxyColors.Red
-            };
-            PlotModelXYPlane.Axes.Add(xAxis);
-            var yAxis = new LinearAxis()
-            {
-                AxislineThickness = 3,
-                MinorTickSize = 4,
-                MajorTickSize = 7,
-                AxislineStyle = LineStyle.Solid,
-                Position = AxisPosition.Left,
-                Minimum = -0.5,
-                Maximum = 0.5,
-                //PositionAtZeroCrossing = true,
-                TicklineColor = OxyColors.Green,
-                AxislineColor = OxyColors.Green,
-                TextColor = OxyColors.Green,
-                MajorGridlineStyle = LineStyle.Solid,
-                MinorGridlineStyle = LineStyle.Solid,
-                Title = "Y",
-                TitleColor = OxyColors.Green
-            };
-            PlotModelXYPlane.Axes.Add(yAxis);
-        }
-
-        public void SetUpModelXZ()
-        {
-            var zAxis = new LinearAxis()
-            {
-                AxislineThickness = 3,
-                MinorTickSize = 4,
-                MajorTickSize = 7,
-                AxislineStyle = LineStyle.Solid,
-                Position = AxisPosition.Left,
-                Minimum = -0.5,
-                Maximum = 0.5,
-                TicklineColor = OxyColors.Blue,
-                TextColor = OxyColors.Blue,
-                AxislineColor = OxyColors.Blue,
-                MajorGridlineStyle = LineStyle.Solid,
-                MinorGridlineStyle = LineStyle.Solid,
-                Title = "Z",
-                TitleColor = OxyColors.Blue
-            };
-            PlotModelXZPlane.Axes.Add(zAxis);
-            var xAxis = new LinearAxis()
-            {
-                AxislineThickness = 3,
-                MinorTickSize = 4,
-                MajorTickSize = 7,
-                AxislineStyle = LineStyle.Solid,
-                Position = AxisPosition.Bottom,
-                Minimum = -0.5,
-                Maximum = 0.5,
-                TicklineColor = OxyColors.Red,
-                AxislineColor = OxyColors.Red,
-                TextColor = OxyColors.Red,
-                MajorGridlineStyle = LineStyle.Solid,
-                MinorGridlineStyle = LineStyle.Solid,
-                Title = "X",
-                TitleColor = OxyColors.Red
-            };
-            PlotModelXZPlane.Axes.Add(xAxis);
-        }
-
-        public void SetUpModelYZ()
-        {
-            var zAxis = new LinearAxis()
-            {
-                AxislineThickness = 3,
-                MinorTickSize = 4,
-                MajorTickSize = 7,
-                AxislineStyle = LineStyle.Solid,
-                Position = AxisPosition.Left,
-                Minimum = -0.5,
-                Maximum = 0.5,
-                TicklineColor = OxyColors.Blue,
-                TextColor = OxyColors.Blue,
-                AxislineColor = OxyColors.Blue,
-                MajorGridlineStyle = LineStyle.Solid,
-                MinorGridlineStyle = LineStyle.Solid,
-                Title = "Z",
-                TitleColor = OxyColors.Blue
-            };
-            PlotModelYZPlane.Axes.Add(zAxis);
-            var yAxis = new LinearAxis()
-            {
-                AxislineThickness = 3,
-                MinorTickSize = 4,
-                MajorTickSize = 7,
-                AxislineStyle = LineStyle.Solid,
-                Position = AxisPosition.Bottom,
-                Minimum = -0.5,
-                Maximum = 0.5,
-                TicklineColor = OxyColors.Green,
-                AxislineColor = OxyColors.Green,
-                TextColor = OxyColors.Green,
-                MajorGridlineStyle = LineStyle.Solid,
-                MinorGridlineStyle = LineStyle.Solid,
-                Title = "Y",
-                TitleColor = OxyColors.Green
-            };
-            PlotModelYZPlane.Axes.Add(yAxis);
-        }
+        #endregion
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

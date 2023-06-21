@@ -30,6 +30,7 @@ namespace TrajectoryOfSensorVisualization.View
             DataContext = viewModel;
             
             InitializeComponent();
+
         }
     }
 }

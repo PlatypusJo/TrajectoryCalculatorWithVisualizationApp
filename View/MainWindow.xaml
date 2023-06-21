@@ -21,9 +21,9 @@
                 <RowDefinition Height="0.1*"/>
                 <RowDefinition Height="2*"/>
             </Grid.RowDefinitions>
-            <oxycontrols:Plot x:Name="PlotXY" Model="{Binding PlotModelXYPlane}" Grid.Column="0" Grid.Row="0"></oxycontrols:Plot>
-            <oxycontrols:Plot x:Name="PlotXZ" Model="{Binding PlotModelXZPlane}" Grid.Column="0" Grid.Row="2"></oxycontrols:Plot>
-            <oxycontrols:Plot x:Name="PlotYZ" Model="{Binding PlotModelYZPlane}" Grid.Column="0" Grid.Row="4"></oxycontrols:Plot>
+            <oxycontrols:Plot x:Name="PlotXY" Model="{Binding PlaneXY.PlotModel}" Grid.Column="0" Grid.Row="0"></oxycontrols:Plot>
+            <oxycontrols:Plot x:Name="PlotXZ" Model="{Binding PlaneXZ.PlotModel}" Grid.Column="0" Grid.Row="2"></oxycontrols:Plot>
+            <oxycontrols:Plot x:Name="PlotYZ" Model="{Binding PlaneYZ.PlotModel}" Grid.Column="0" Grid.Row="4"></oxycontrols:Plot>
         </Grid>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
@@ -82,6 +82,23 @@
                                         </Transform3DGroup>
                                     </GeometryModel3D.Transform>
                                 </GeometryModel3D>
+                                <!--<GeometryModel3D>
+                                    <GeometryModel3D.Material>
+                                        <MaterialGroup>
+                                            <DiffuseMaterial Brush="#1dacd6"/>
+                                            <EmissiveMaterial Brush="#330000ff"/>
+                                        </MaterialGroup>
+                                    </GeometryModel3D.Material>
+                                    <GeometryModel3D.BackMaterial>
+                                        <MaterialGroup>
+                                            <DiffuseMaterial Brush="#1dacd6"/>
+                                            <EmissiveMaterial Brush="#330000ff"/>
+                                        </MaterialGroup>
+                                    </GeometryModel3D.BackMaterial>
+                                    <GeometryModel3D.Geometry>
+                                        <MeshGeometry3D Positions="{Binding Points}" TriangleIndices="{Binding TriangleIndices}"/>
+                                    </GeometryModel3D.Geometry>
+                                </GeometryModel3D>-->
                             </Model3DGroup>
                         </ModelVisual3D.Content>
                     </ModelVisual3D>
