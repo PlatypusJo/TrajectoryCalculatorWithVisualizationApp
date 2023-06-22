@@ -50,7 +50,7 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             Vector3D v2 = TrajectoryCalculator.RotateVectorInSpace(v, q);
         }
 
-        #region Methods For Work With ViewModel Data
+        #region Methods to Work With ViewModel Data
         public void CalculateIntegral()
         {
             List<Vector3D> accelerationVectors = new();

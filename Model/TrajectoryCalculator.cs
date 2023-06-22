@@ -102,6 +102,33 @@ namespace TrajectoryOfSensorVisualization.Model
         #endregion
         
         #region Methods to work with Quaternions
+
+        /// <summary>
+        /// Преобразует вектор в кватернион
+        /// </summary>
+        /// <param name="vector">Исходный вектор</param>
+        /// <returns>Кватернион</returns>
+        public static Quaternion ToQuaternion(this Vector3D vector) => new(vector.X, vector.Y, vector.Z, 0);
+
+        /// <summary>
+        /// Преобразует кватернион в вектор
+        /// </summary>
+        /// <param name="quaternion">Исходный кватернион</param>
+        /// <returns>Вектор</returns>
+        public static Vector3D ToVector3D(this Quaternion quaternion) => new(quaternion.X, quaternion.Y, quaternion.Z);
+
+        /// <summary>
+        /// Преобразует кватернион в обратный
+        /// </summary>
+        /// <param name="quaternion">Исходный кватернион</param>
+        /// <returns>Обратный кватернион</returns>
+        public static Quaternion ToInverse(this Quaternion quaternion)
+        {
+            Quaternion invertQuaternion = quaternion;
+            invertQuaternion.Invert();
+            return invertQuaternion;
+        }
+
         /// <summary>
         /// Производит поворот вектора в пространстве
         /// </summary>
@@ -110,7 +137,6 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <returns>Повёрнутый в пространстве вектор</returns>
         public static Vector3D RotateVectorInSpace(Vector3D initialVector, Quaternion rotationQuaternion)
         {
-            Quaternion vectorQuaternion = new(initialVector.X, initialVector.Y, initialVector.Z, 0);
             double cosOfRotationAngle = Math.Cos(rotationQuaternion.W / 2.0);
             double sinOfRotationAngle = Math.Sin(rotationQuaternion.W / 2.0);
             rotationQuaternion = new()
@@ -120,11 +146,10 @@ namespace TrajectoryOfSensorVisualization.Model
                 Z = rotationQuaternion.Z * sinOfRotationAngle,
                 W = cosOfRotationAngle
             };
-            Quaternion invertRotationQuaternion = rotationQuaternion;
-            invertRotationQuaternion.Invert();
-            Quaternion resultQuaternion = rotationQuaternion * vectorQuaternion * invertRotationQuaternion;
-            return new(resultQuaternion.X, resultQuaternion.Y, resultQuaternion.Z);
+            Quaternion resultQuaternion = rotationQuaternion * initialVector.ToQuaternion() * rotationQuaternion.ToInverse();
+            return resultQuaternion.ToVector3D();
         }
+
         #endregion
         
         public static Vector3D CalculateDisplacement(List<Vector3D> accelerationVectors, int countOfSamples, int sampleRate)
@@ -140,7 +165,7 @@ namespace TrajectoryOfSensorVisualization.Model
             return displacement;
         }
 
-        public static List<Vector3D> CalculatePointsOfTrajectoryInSpace()
+        public static List<Vector3D> CalculatePointsOfTrajectoryInSpace(Vector3D startingPoint, Vector3D endPoint)
         {
             List<Vector3D> points = new List<Vector3D>();
             return points;

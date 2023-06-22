@@ -128,6 +128,11 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <param name="dataPoint">точка с данными для отображения</param>
         public void AddDataPoint(DataPoint dataPoint) => Values.Points.Add(dataPoint);
         /// <summary>
+        /// Удаляет точку из списка данных
+        /// </summary>
+        /// <param name="dataPoint">точка с данными</param>
+        public void RemoveDataPoint(DataPoint dataPoint) => Values.Points.Remove(dataPoint);
+        /// <summary>
         /// Очищает список данных
         /// </summary>
         public void RemoveAllDataPoints() => Values.Points.Clear();
