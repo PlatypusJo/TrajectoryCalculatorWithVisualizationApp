@@ -10,6 +10,11 @@ namespace TrajectoryOfSensorVisualization.Model
 {
     public class Trajectory3DModel
     {
+        #region Private Fields
+        private Point3DCollection pointsInSpace;
+        private Int32Collection triangleIndexes;
+        #endregion
+
         #region Constructors
         public Trajectory3DModel(Point3D initialPoint)
         {
@@ -17,11 +22,6 @@ namespace TrajectoryOfSensorVisualization.Model
             triangleIndexes = new();
             AddPointInSpace(initialPoint);
         }
-        #endregion
-
-        #region Private Fields
-        private Point3DCollection pointsInSpace;
-        private Int32Collection triangleIndexes;
         #endregion
 
         #region Public Methods

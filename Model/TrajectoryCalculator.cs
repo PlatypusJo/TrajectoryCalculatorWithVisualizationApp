@@ -9,7 +9,7 @@ using System.Windows.Media.Media3D;
 namespace TrajectoryOfSensorVisualization.Model
 {
     /// <summary>
-    /// 
+    /// Класс для вычисления положения датчика в пространстве и его траектории движения
     /// </summary>
     public static class TrajectoryCalculator
     {
@@ -154,7 +154,7 @@ namespace TrajectoryOfSensorVisualization.Model
         
         public static Vector3D CalculateDisplacement(List<Vector3D> accelerationVectors, int countOfSamples, int sampleRate)
         {
-            double deltaT = 1 / sampleRate;
+            double deltaT = 1.0 / sampleRate;
             Vector3D velocity;
             Vector3D displacement;
             for(int i = 0; i < countOfSamples; i++)
@@ -165,9 +165,18 @@ namespace TrajectoryOfSensorVisualization.Model
             return displacement;
         }
 
-        public static List<Vector3D> CalculatePointsOfTrajectoryInSpace(Vector3D startingPoint, Vector3D endPoint)
+        public static List<Point3D> CalculatePointsOfTrajectoryInSpace(Vector3D startingPoint, Vector3D endPoint, double radius)
         {
-            List<Vector3D> points = new List<Vector3D>();
+            List<Point3D> points = new();
+            points.Add((Point3D)startingPoint);
+            Vector3D vectorBetweenTwoPoints = endPoint - startingPoint;
+            for (double i = 0.01; i < 1.0; i += 0.01)
+            {
+                Vector3D pointInSpace = vectorBetweenTwoPoints * i + startingPoint;
+                double coefficient = radius / pointInSpace.Length;
+                points.Add((Point3D)(pointInSpace * coefficient));
+            }
+            points.Add((Point3D)endPoint);
             return points;
         }
     }

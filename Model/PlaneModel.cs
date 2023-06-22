@@ -16,6 +16,25 @@ namespace TrajectoryOfSensorVisualization.Model
     /// </summary>
     public class PlaneModel
     {
+        #region Private Fields
+        /// <summary>
+        /// Модель графика
+        /// </summary>
+        private PlotModel plotModel;
+        /// <summary>
+        /// Горизонтальная ось
+        /// </summary>
+        private LinearAxis horizontalAxis;
+        /// <summary>
+        /// Вертикальная ось
+        /// </summary>
+        private LinearAxis verticalAxis;
+        /// <summary>
+        /// Данные отображаемые на графике
+        /// </summary>
+        private LineSeries values;
+        #endregion
+
         #region Constructors
         /// <summary>
         /// Конструктор модели плоскости
@@ -70,25 +89,6 @@ namespace TrajectoryOfSensorVisualization.Model
             };
             plotModel = new PlotModel();
         }
-        #endregion
-
-        #region Private Fields
-        /// <summary>
-        /// Модель графика
-        /// </summary>
-        private PlotModel plotModel;
-        /// <summary>
-        /// Горизонтальная ось
-        /// </summary>
-        private LinearAxis horizontalAxis;
-        /// <summary>
-        /// Вертикальная ось
-        /// </summary>
-        private LinearAxis verticalAxis;
-        /// <summary>
-        /// Данные отображаемые на графике
-        /// </summary>
-        private LineSeries values;
         #endregion
 
         #region Private Methods

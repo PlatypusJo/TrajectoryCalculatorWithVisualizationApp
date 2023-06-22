@@ -55,7 +55,7 @@
                                         </MaterialGroup>
                                     </GeometryModel3D.BackMaterial>
                                     <GeometryModel3D.Geometry>
-                                        <MeshGeometry3D Positions="{Binding Points}" TriangleIndices="{Binding TriangleIndices}"/>
+                                        <MeshGeometry3D Positions="{Binding TrajectoryInSpace.PointsInSpace}" TriangleIndices="{Binding TrajectoryInSpace.TriangleIndexes}"/>
                                     </GeometryModel3D.Geometry>
                                     <GeometryModel3D.Transform>
                                         <Transform3DGroup>
