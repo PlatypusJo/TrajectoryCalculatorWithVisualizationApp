@@ -26,12 +26,10 @@ namespace TrajectoryOfSensorVisualization.ViewModel
         private Point3DCollection pointsInSpaceToDisplay3DPlots;
         private Int32Collection triangleIndices;
 
-        
-
         public PlotsViewModel()
         {
             PlaneXY = new(OxyColors.Green, "Y", OxyColors.Red, "X", -0.5, 0.5);
-            PlaneXZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -0.5, 0.5);
+            PlaneXZ = new(OxyColors.Blue, "Z", OxyColors.Red, "X", -0.5, 0.5);
             PlaneYZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -0.5, 0.5);
             pointsInSpace = new()
             {
@@ -45,12 +43,11 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             GenerateData();
             LoadData();
             //CalculateIntegral();
-            //double d = 180;
-            //d.ToRadians();
-            //Vector3D v = new(0, 1, 0);
-            //Vector3D v1 = new(1, 0, 0);
-            //Quaternion q = new(v1, Math.PI / 180 * 90);
-            //Vector3D v2 = TrajectoryCalculator.RotateVector3D(v, q);
+            Vector3D v = new(1, 2, 0);
+            Vector3D v1 = new(1, 0, 0);
+            double angle = 90;
+            Quaternion q = new(v1.X, v1.Y, v1.Z, angle.ToRadians());
+            Vector3D v2 = TrajectoryCalculator.RotateVectorInSpace(v, q);
         }
 
         #region Methods For Work With ViewModel Data
@@ -73,7 +70,7 @@ namespace TrajectoryOfSensorVisualization.ViewModel
                 }
                 accelerationVectors = RotateVectors(accelerationVectors, quaternions, gLength);
             }
-            Vector3D v = TrajectoryCalculator.CalculateDisplacementWithIntegral(accelerationVectors, 100, 200);
+            Vector3D v = TrajectoryCalculator.CalculateDisplacement(accelerationVectors, 100, 200);
             Debug.WriteLine($"Интеграл равен: {v.X}, {v.Y}, {v.Z}");
         }
 
@@ -87,7 +84,7 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             }
             for (int i = 0; i < axellerateVectors.Count; i++)
             {
-                result.Add(TrajectoryCalculator.RotateVector3D(axellerateVectors[i], quaternions[i]));
+                result.Add(TrajectoryCalculator.RotateVectorInSpace(axellerateVectors[i], quaternions[i]));
             }
             return result;
         }
@@ -176,29 +173,6 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             triangleIndices.Add(k + 1);
             k++;
         }
-
-        #region Find trajectory with approximation
-        //public void CalculateTrajectory(List<Vector3D> pointsForApproximation, ref int k)
-        //{
-        //    for (double t = 0.0; t < 1.0; t += 0.01, k++)
-        //    {
-        //        Vector3D approximatedPoint = TrajectoryCalculator.Approximate(pointsForApproximation[0], pointsForApproximation[1], pointsForApproximation[2], pointsForApproximation[3], t);
-        //        pointsInSpace.Add((Point3D)approximatedPoint);
-        //        pointsInSpaceToDisplay3DPlots.Add((Point3D)approximatedPoint);
-        //        pointsInSpaceToDisplay3DPlots.Add(new Point3D(approximatedPoint.X, approximatedPoint.Y - 0.02, approximatedPoint.Z));
-        //        if (k > 0)
-        //        {
-        //            triangleIndices.Add(k);
-        //            triangleIndices.Add(k - 1);
-        //            triangleIndices.Add(k + 1);
-        //            triangleIndices.Add(k);
-        //        }
-        //        triangleIndices.Add(k);
-        //        triangleIndices.Add(k + 1);
-        //        k++;
-        //    }
-        //}
-        #endregion
         #endregion
 
         public void LoadData()

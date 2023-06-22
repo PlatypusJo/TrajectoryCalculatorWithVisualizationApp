@@ -13,6 +13,7 @@ namespace TrajectoryOfSensorVisualization.Model
     /// </summary>
     public static class TrajectoryCalculator
     {
+        #region Methods to work with angles
         /// <summary>
         /// 
         /// </summary>
@@ -39,7 +40,9 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <param name="degrees"></param>
         /// <returns></returns>
         public static double ToRadians(this double degrees) => Math.PI / 180 * degrees;
-
+        #endregion
+        
+        #region Methods to calculate location
         /// <summary>
         /// 
         /// </summary>
@@ -96,43 +99,35 @@ namespace TrajectoryOfSensorVisualization.Model
             point3D.Y = CalculateLocationCoordinateY(radius, alphaAngle, betaAngle);
             point3D.Z = CalculateLocationCoordinateZ(radius, alphaAngle, betaAngle);
         }
-
-        public static Vector3D LinearInterpolate(Vector3D a, Vector3D b, double t)
+        #endregion
+        
+        #region Methods to work with Quaternions
+        /// <summary>
+        /// Производит поворот вектора в пространстве
+        /// </summary>
+        /// <param name="initialVector">Начальный вектор</param>
+        /// <param name="rotationQuaternion">Кватернион поворота</param>
+        /// <returns>Повёрнутый в пространстве вектор</returns>
+        public static Vector3D RotateVectorInSpace(Vector3D initialVector, Quaternion rotationQuaternion)
         {
-            return a + (b - a) * t;
+            Quaternion vectorQuaternion = new(initialVector.X, initialVector.Y, initialVector.Z, 0);
+            double cosOfRotationAngle = Math.Cos(rotationQuaternion.W / 2.0);
+            double sinOfRotationAngle = Math.Sin(rotationQuaternion.W / 2.0);
+            rotationQuaternion = new()
+            {
+                X = rotationQuaternion.X * sinOfRotationAngle,
+                Y = rotationQuaternion.Y * sinOfRotationAngle,
+                Z = rotationQuaternion.Z * sinOfRotationAngle,
+                W = cosOfRotationAngle
+            };
+            Quaternion invertRotationQuaternion = rotationQuaternion;
+            invertRotationQuaternion.Invert();
+            Quaternion resultQuaternion = rotationQuaternion * vectorQuaternion * invertRotationQuaternion;
+            return new(resultQuaternion.X, resultQuaternion.Y, resultQuaternion.Z);
         }
-
-        public static Vector3D Approximate(Vector3D point1, Vector3D point2, Vector3D point3, Vector3D point4, double t)
-        {
-            Vector3D interpolatedPoint1 = LinearInterpolate(point1, point2, t);
-            Vector3D interpolatedPoint2 = LinearInterpolate(point2, point3, t);
-            Vector3D interpolatedPoint3 = LinearInterpolate(point3, point4, t);
-
-            Vector3D interpolatedPoint4 = LinearInterpolate(interpolatedPoint1, interpolatedPoint2, t);
-            Vector3D interpolatedPoint5 = LinearInterpolate(interpolatedPoint2, interpolatedPoint3, t);
-
-            Vector3D approximatedPoint = LinearInterpolate(interpolatedPoint4, interpolatedPoint5, t);
-
-            return approximatedPoint;
-        }
-
-        public static Vector3D ReprojectVector3D(Vector3D initialVector, Quaternion quaternionOrientation)
-        {
-            Vector3D temporaryVector = new(-quaternionOrientation.X, -quaternionOrientation.Y, -quaternionOrientation.Z);
-            Vector3D intermediateVector = 2 * Vector3D.CrossProduct(temporaryVector, initialVector);
-            Vector3D resultVector = initialVector + quaternionOrientation.W * intermediateVector + Vector3D.CrossProduct(temporaryVector, intermediateVector);
-            return resultVector;
-        }
-
-        public static Vector3D RotateVector3D(Vector3D initialVector, Quaternion quaternionOrientation)
-        {
-            Vector3D temporaryVector = new(quaternionOrientation.X, quaternionOrientation.Y, quaternionOrientation.Z);
-            Vector3D intermediateVector = 2 * Vector3D.CrossProduct(quaternionOrientation.Axis, initialVector);
-            Vector3D resultVector = initialVector + quaternionOrientation.W * intermediateVector + Vector3D.CrossProduct(quaternionOrientation.Axis, intermediateVector);
-            return resultVector;
-        }
-
-        public static Vector3D CalculateDisplacementWithIntegral(List<Vector3D> accelerationVectors, int countOfSamples, int sampleRate)
+        #endregion
+        
+        public static Vector3D CalculateDisplacement(List<Vector3D> accelerationVectors, int countOfSamples, int sampleRate)
         {
             double deltaT = 1 / sampleRate;
             Vector3D velocity;

@@ -91,12 +91,29 @@ namespace TrajectoryOfSensorVisualization.Model
         private LineSeries values;
         #endregion
 
+        #region Private Methods
+        /// <summary>
+        /// Заполняет модель необходимыми данными и возвращает готовую модель
+        /// </summary>
+        private PlotModel SetUpPlotModelAndReturn()
+        {
+            plotModel.Axes.Clear();
+            plotModel.Series.Clear();
+            
+            plotModel.Axes.Add(HorizontalAxis);
+            plotModel.Axes.Add(VerticalAxis);
+            plotModel.Series.Add(Values);
+
+            return plotModel;
+        }
+        #endregion
+
         #region Public Methods
         /// <summary>
         /// Метод изменения диапазона значений на осях
         /// </summary>
-        /// <param name="minValue">Минимальное значение из диапазона значений на осях</param>
-        /// <param name="maxValue">Максимальное значение из диапазона значений на осях</param>
+        /// <param name="minValue">Новое минимальное значение из диапазона значений на осях</param>
+        /// <param name="maxValue">Новое максимальное значение из диапазона значений на осях</param>
         public void ChangeRangeOfValues(double minValue, double maxValue)
         {
             VerticalAxis.Maximum = maxValue;
@@ -116,26 +133,11 @@ namespace TrajectoryOfSensorVisualization.Model
         public void RemoveAllDataPoints() => Values.Points.Clear();
         #endregion
 
-        #region Private Methods
-        /// <summary>
-        /// Заполняет модель необходимыми данными
-        /// </summary>
-        private void SetUpPlotModel()
-        {
-            plotModel.Axes.Clear();
-            plotModel.Series.Clear();
-            
-            plotModel.Axes.Add(HorizontalAxis);
-            plotModel.Axes.Add(VerticalAxis);
-            plotModel.Series.Add(Values);
-        }
-        #endregion
-
         #region Public Properties
         /// <summary>
         /// Заполняет модель и возвращает её
         /// </summary>
-        public PlotModel PlotModel { get { SetUpPlotModel(); return plotModel;}}
+        public PlotModel PlotModel => SetUpPlotModelAndReturn();
         /// <summary>
         /// Возвращает горизонтальную ось
         /// </summary>
