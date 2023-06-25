@@ -9,74 +9,74 @@ using System.Windows.Media.Media3D;
 namespace TrajectoryOfSensorVisualization.Model
 {
     /// <summary>
-    /// Класс для вычисления положения датчика в пространстве и его траектории движения
+    /// Статический класс для вычисления положения датчика в пространстве и его траектории движения
     /// </summary>
     public static class TrajectoryCalculator
     {
         #region Methods to work with angles
         /// <summary>
-        /// 
+        /// Вычисляет угол альфа
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="w"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        /// <exception cref="TimeNegativeException"></exception>
+        /// <param name="a">Амплитуда</param>
+        /// <param name="w">Угловая частота</param>
+        /// <param name="t">Время</param>
+        /// <returns>Угол альфа в радианах</returns>
+        /// <exception cref="TimeNegativeException">Исключение, если время отрицательно</exception>
         public static double CalculateAngleAlpha(double a, double w, double t) => t > 0 ? a * Math.Sin(w * t) : throw new TimeNegativeException("Отрицательное значение времени");
 
         /// <summary>
-        /// 
+        /// Вычисляет угол бета
         /// </summary>
         /// <param name="b"></param>
         /// <param name="w"></param>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        /// <exception cref="TimeNegativeException"></exception>
+        /// <param name="t">Время</param>
+        /// <returns>Угол бета в радианах</returns>
+        /// <exception cref="TimeNegativeException">Исключение, если время отрицательно</exception>
         public static double CalculateAngleBeta(double b, double w, double t) => t > 0 ? b * Math.Sin(w * t) : throw new TimeNegativeException("Отрицательное значение времени");
         
         /// <summary>
-        /// 
+        /// Переводит угол из градусов в радианы
         /// </summary>
-        /// <param name="degrees"></param>
-        /// <returns></returns>
+        /// <param name="degrees">Угол в градусах</param>
+        /// <returns>Угол в радианах</returns>
         public static double ToRadians(this double degrees) => Math.PI / 180 * degrees;
         #endregion
-        
+
         #region Methods to calculate location
         /// <summary>
-        /// 
+        /// Вычисляет координату X положения датчика
         /// </summary>
-        /// <param name="radius"></param>
-        /// <param name="alphaAngle"></param>
-        /// <param name="betaAngle"></param>
-        /// <returns></returns>
+        /// <param name="radius">Радиус сферы, по которой движется датчик</param>
+        /// <param name="alphaAngle">Угол альфа в радианах</param>
+        /// <param name="betaAngle">Угол бета в радианах</param>
+        /// <returns>Координату X положения датчика</returns>
         public static double CalculateLocationCoordinateX(double radius, double alphaAngle, double betaAngle) => radius * Math.Sin(alphaAngle) * Math.Cos(betaAngle);
 
         /// <summary>
-        /// 
+        /// Вычисляет координату Y положения датчика
         /// </summary>
-        /// <param name="radius"></param>
-        /// <param name="alphaAngle"></param>
-        /// <param name="betaAngle"></param>
-        /// <returns></returns>
+        /// <param name="radius">Радиус сферы, по которой движется датчик</param>
+        /// <param name="alphaAngle">Угол альфа в радианах</param>
+        /// <param name="betaAngle">Угол бета в радианах</param>
+        /// <returns>Координату Y положения датчика</returns>
         public static double CalculateLocationCoordinateY(double radius, double alphaAngle, double betaAngle) => radius * Math.Sin(alphaAngle) * Math.Sin(betaAngle);
 
         /// <summary>
-        /// 
+        /// Вычисляет координату Z положения датчика
         /// </summary>
-        /// <param name="radius"></param>
-        /// <param name="alphaAngle"></param>
-        /// <param name="betaAngle"></param>
-        /// <returns></returns>
+        /// <param name="radius">Радиус сферы, по которой движется датчик</param>
+        /// <param name="alphaAngle">Угол альфа в радианах</param>
+        /// <param name="betaAngle">Угол бета в радианах</param>
+        /// <returns>Координату Z положения датчика</returns>
         public static double CalculateLocationCoordinateZ(double radius, double alphaAngle, double betaAngle) => radius * Math.Cos(alphaAngle);
 
         /// <summary>
-        /// 
+        /// Вычисляет положение датчика в пространстве
         /// </summary>
-        /// <param name="radius"></param>
-        /// <param name="alphaAngle"></param>
-        /// <param name="betaAngle"></param>
-        /// <returns></returns>
+        /// <param name="radius">Радиус сферы, по которой движется датчик</param>
+        /// <param name="alphaAngle">Угол альфа в радианах</param>
+        /// <param name="betaAngle">Угол бета в радианах</param>
+        /// <returns>Положение датчика в виде Vector3D</returns>
         public static Vector3D CalculateLocationInSpace(double radius, double alphaAngle, double betaAngle)
         {
             Vector3D point3D;
@@ -87,12 +87,12 @@ namespace TrajectoryOfSensorVisualization.Model
         }
 
         /// <summary>
-        /// 
+        /// Вычисляет положение датчика в пространстве
         /// </summary>
-        /// <param name="point3D"></param>
-        /// <param name="radius"></param>
-        /// <param name="alphaAngle"></param>
-        /// <param name="betaAngle"></param>
+        /// <param name="point3D">Точка для записи положения</param>
+        /// <param name="radius">Радиус сферы, по которой движется датчик</param>
+        /// <param name="alphaAngle">Угол альфа в радианах</param>
+        /// <param name="betaAngle">Угол бета в радианах</param>
         public static void CalculateLocationInSpace(ref Vector3D point3D, double radius, double alphaAngle, double betaAngle)
         {
             point3D.X = CalculateLocationCoordinateX(radius, alphaAngle, betaAngle);
@@ -137,34 +137,62 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <returns>Повёрнутый в пространстве вектор</returns>
         public static Vector3D RotateVectorInSpace(Vector3D initialVector, Quaternion rotationQuaternion)
         {
-            double cosOfRotationAngle = Math.Cos(rotationQuaternion.W / 2.0);
-            double sinOfRotationAngle = Math.Sin(rotationQuaternion.W / 2.0);
-            rotationQuaternion = new()
-            {
-                X = rotationQuaternion.X * sinOfRotationAngle,
-                Y = rotationQuaternion.Y * sinOfRotationAngle,
-                Z = rotationQuaternion.Z * sinOfRotationAngle,
-                W = cosOfRotationAngle
-            };
             Quaternion resultQuaternion = rotationQuaternion * initialVector.ToQuaternion() * rotationQuaternion.ToInverse();
             return resultQuaternion.ToVector3D();
         }
 
         #endregion
-        
-        public static Vector3D CalculateDisplacement(List<Vector3D> accelerationVectors, int countOfSamples, int sampleRate)
+
+        #region Methods to calculate displacement and trajectory of sensor
+        /// <summary>
+        /// Вычисляет двойной интеграл и возвращает перемещение датчика
+        /// </summary>
+        /// <param name="accelerationVectors">Список векторов ускорений</param>
+        /// <param name="start">Начало с какого вектора начинаются вычисления</param>
+        /// <param name="countOfSamples">Количество отсчётов</param>
+        /// <param name="sampleRate">Частота дискретизации</param>
+        /// <returns>Вектор перемещения</returns>
+        public static Vector3D CalculateDisplacement(List<Vector3D> accelerationVectors, int start, int countOfSamples, int sampleRate)
         {
             double deltaT = 1.0 / sampleRate;
             Vector3D velocity;
             Vector3D displacement;
-            for(int i = 0; i < countOfSamples; i++)
+            for(int i = start; i < start + countOfSamples; i++)
             {
                 velocity += accelerationVectors[i] * deltaT;
                 displacement += velocity * deltaT;
             }
             return displacement;
         }
-
+        /// <summary>
+        /// Вычисляет двойной интеграл и возвращает список перемещений датчика
+        /// </summary>
+        /// <param name="accelerationVectors">Список векторов ускорений</param>
+        /// <param name="start">Начало с какого вектора начинаются вычисления</param>
+        /// <param name="countOfSamples">Количество отсчётов</param>
+        /// <param name="sampleRate">Частота дискретизации</param>
+        /// <returns>Список векторов перемещения</returns>
+        public static List<Vector3D> CalculateAndReturnListOfDisplacements(List<Vector3D> accelerationVectors, int start, int countOfSamples, int sampleRate)
+        {
+            double deltaT = 1.0 / sampleRate;
+            Vector3D velocity;
+            Vector3D displacement;
+            List<Vector3D> displacementVectors = new();
+            for (int i = start; i < start + countOfSamples; i++)
+            {
+                velocity += accelerationVectors[i] * deltaT;
+                displacement += velocity * deltaT;
+                displacementVectors.Add(displacement);
+            }
+            return displacementVectors;
+        }
+        /// <summary>
+        /// Вычисляет точки для построения траектории движения по сфере
+        /// </summary>
+        /// <param name="startingPoint">Начальная точка</param>
+        /// <param name="endPoint">Конечная точка</param>
+        /// <param name="radius">Радиус сферы</param>
+        /// <returns>Список точек в пространстве, по которым строится траектория</returns>
         public static List<Point3D> CalculatePointsOfTrajectoryInSpace(Vector3D startingPoint, Vector3D endPoint, double radius)
         {
             List<Point3D> points = new();
@@ -179,5 +207,6 @@ namespace TrajectoryOfSensorVisualization.Model
             points.Add((Point3D)endPoint);
             return points;
         }
+        #endregion
     }
 }
