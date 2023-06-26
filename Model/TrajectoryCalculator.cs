@@ -208,5 +208,40 @@ namespace TrajectoryOfSensorVisualization.Model
             return points;
         }
         #endregion
+
+        #region Methods to calculate radius of sphere
+        /// <summary>
+        /// Рассчитывает расстояние между 2-мя точками
+        /// </summary>
+        /// <param name="point1">Точка 1</param>
+        /// <param name="point2">Точка 2</param>
+        /// <returns>Расстояние между точками</returns>
+        public static double CalculateDistanceBetweenTwoPoints(Vector3D point1, Vector3D point2) => (point1 - point2).Length;
+        /// <summary>
+        /// Рассчитывает вектор на единичной сфере
+        /// </summary>
+        /// <param name="rotation">Кватернион вращения</param>
+        /// <returns>Вектор на единичной сфере</returns>
+        public static Vector3D CalculateUnitVector(Quaternion rotation)
+        {
+            Vector3D yAxis = new(0, 1, 0);
+            return RotateVectorInSpace(yAxis, rotation.ToInverse());
+        }
+        /// <summary>
+        /// Рассчитывает радиус сферы
+        /// </summary>
+        /// <param name="t1">Начало интегрирования</param>
+        /// <param name="t2">Конец интегрирования</param>
+        /// <param name="accVectors">Список векторов ускорений</param>
+        /// <param name="quaternion">Кватернион</param>
+        /// <param name="sampleRate">Частота дискретизации</param>
+        /// <returns>Радиус сферы</returns>
+        public static double CalculateRadius(int t1, int t2, List<Vector3D> accVectors, List<Quaternion> quaternion, int sampleRate)
+        {
+            double d2 = CalculateDisplacement(accVectors, t1, t2 - t1, sampleRate).Length;
+            double d1 = CalculateDistanceBetweenTwoPoints(CalculateUnitVector(quaternion[t1]), CalculateUnitVector(quaternion[t2]));
+            return d2 / d1;
+        }
+        #endregion
     }
 }

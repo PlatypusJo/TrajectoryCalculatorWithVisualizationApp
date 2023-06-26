@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:oxycontrols="http://oxyplot.org/wpf/contrib"
         xmlns:local="clr-namespace:TrajectoryOfSensorVisualization.View"
+        xmlns:inter3D="clr-namespace:_3DTools;assembly=3DTools"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
@@ -25,136 +26,92 @@
             <oxycontrols:Plot x:Name="PlotXZ" Model="{Binding PlaneXZ.PlotModel}" Grid.Column="0" Grid.Row="2"></oxycontrols:Plot>
             <oxycontrols:Plot x:Name="PlotYZ" Model="{Binding PlaneYZ.PlotModel}" Grid.Column="0" Grid.Row="4"></oxycontrols:Plot>
         </Grid>
-        <Grid Grid.Column="1">
+        <Grid Grid.Column="1" MouseWheel="Grid_MouseWheel" Background="#00000000">
             <Grid.RowDefinitions>
                 <RowDefinition Height="3*"/>
                 <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
-            <Viewport3D Grid.Row="0">
-                <Viewport3D.Camera>
-                    <PerspectiveCamera Position="2,2,2" LookDirection="-2,-2,-2"
+            <inter3D:TrackballDecorator Grid.Row="0">
+                <inter3D:Interactive3DDecorator>
+                    <Viewport3D>
+                        <Viewport3D.Camera>
+                            <PerspectiveCamera x:Name="Camera3D" Position="2,2,2" LookDirection="-2,-2,-2"
                                UpDirection="0,0.1,0" FieldOfView="30"/>
-                </Viewport3D.Camera>
-                <Viewport3D.Children>
-                    <ModelVisual3D>
-                        <ModelVisual3D.Content>
-                            <Model3DGroup>
-                                <DirectionalLight Color="White" Direction="1,0,-1"/>
-                                <AmbientLight Color="Black"/>
-                                <GeometryModel3D>
-                                    <GeometryModel3D.Material>
-                                        <MaterialGroup>
-                                            <DiffuseMaterial Brush="#1dacd6"/>
-                                            <EmissiveMaterial Brush="#330000ff"/>
-                                        </MaterialGroup>
-                                    </GeometryModel3D.Material>
-                                    <GeometryModel3D.BackMaterial>
-                                        <MaterialGroup>
-                                            <DiffuseMaterial Brush="#1dacd6"/>
-                                            <EmissiveMaterial Brush="#330000ff"/>
-                                        </MaterialGroup>
-                                    </GeometryModel3D.BackMaterial>
-                                    <GeometryModel3D.Geometry>
-                                        <MeshGeometry3D Positions="{Binding TrajectoryInSpace.PointsInSpace}" TriangleIndices="{Binding TrajectoryInSpace.TriangleIndexes}"/>
-                                    </GeometryModel3D.Geometry>
-                                    <GeometryModel3D.Transform>
-                                        <Transform3DGroup>
-                                            <Transform3DGroup.Children>
-                                                <RotateTransform3D>
-                                                    <RotateTransform3D.Rotation>
-                                                        <AxisAngleRotation3D Axis="1,0,0" 
+                        </Viewport3D.Camera>
+                        <Viewport3D.Children>
+                            <inter3D:ScreenSpaceLines3D Points="0, 0, -20 0, 0, 20" Thickness="0.7" Color="Blue"/>
+                            <inter3D:ScreenSpaceLines3D Points="0, -20, 0 0, 20, 0" Thickness="0.7" Color="Green"/>
+                            <inter3D:ScreenSpaceLines3D Points="-20, 0, 0 20, 0, 0" Thickness="0.7" Color="Red"/>
+                            <ModelVisual3D>
+                                <ModelVisual3D.Content>
+                                    <Model3DGroup>
+                                        <DirectionalLight Color="White" Direction="1,0,-1"/>
+                                        <AmbientLight Color="Black"/>
+                                        <GeometryModel3D>
+                                            <GeometryModel3D.Material>
+                                                <MaterialGroup>
+                                                    <DiffuseMaterial Brush="#1dacd6"/>
+                                                    <EmissiveMaterial Brush="#330000ff"/>
+                                                </MaterialGroup>
+                                            </GeometryModel3D.Material>
+                                            <GeometryModel3D.BackMaterial>
+                                                <MaterialGroup>
+                                                    <DiffuseMaterial Brush="#1dacd6"/>
+                                                    <EmissiveMaterial Brush="#330000ff"/>
+                                                </MaterialGroup>
+                                            </GeometryModel3D.BackMaterial>
+                                            <GeometryModel3D.Geometry>
+                                                <MeshGeometry3D Positions="{Binding TrajectoryInSpace.PointsInSpace}" TriangleIndices="{Binding TrajectoryInSpace.TriangleIndices}"/>
+                                            </GeometryModel3D.Geometry>
+                                            <GeometryModel3D.Transform>
+                                                <Transform3DGroup>
+                                                    <Transform3DGroup.Children>
+                                                        <RotateTransform3D>
+                                                            <RotateTransform3D.Rotation>
+                                                                <AxisAngleRotation3D Axis="1,0,0" 
                                                             Angle="0" x:Name="rotateX"/>
-                                                    </RotateTransform3D.Rotation>
-                                                </RotateTransform3D>
-                                                <RotateTransform3D>
-                                                    <RotateTransform3D.Rotation>
-                                                        <AxisAngleRotation3D Axis="0,1,0" 
+                                                            </RotateTransform3D.Rotation>
+                                                        </RotateTransform3D>
+                                                        <RotateTransform3D>
+                                                            <RotateTransform3D.Rotation>
+                                                                <AxisAngleRotation3D Axis="0,1,0" 
                                                             Angle="0" x:Name="rotateY"/>
-                                                    </RotateTransform3D.Rotation>
-                                                </RotateTransform3D>
-                                                <RotateTransform3D>
-                                                    <RotateTransform3D.Rotation>
-                                                        <AxisAngleRotation3D Axis="0,0,1" 
+                                                            </RotateTransform3D.Rotation>
+                                                        </RotateTransform3D>
+                                                        <RotateTransform3D>
+                                                            <RotateTransform3D.Rotation>
+                                                                <AxisAngleRotation3D Axis="0,0,1" 
                                                             Angle="0" x:Name="rotateZ"/>
-                                                    </RotateTransform3D.Rotation>
-                                                </RotateTransform3D>
-                                            </Transform3DGroup.Children>
-                                        </Transform3DGroup>
-                                    </GeometryModel3D.Transform>
-                                </GeometryModel3D>
-                                <GeometryModel3D>
-                                    <GeometryModel3D.Material>
-                                        <MaterialGroup>
-                                            <DiffuseMaterial Brush="{Binding Sphere.Brush}"/>
-                                            <EmissiveMaterial Brush="{Binding Sphere.Brush}" />
-                                        </MaterialGroup>
-                                    </GeometryModel3D.Material>
-                                    <GeometryModel3D.BackMaterial>
-                                        <MaterialGroup>
-                                            <DiffuseMaterial Brush="{Binding Sphere.Brush}"/>
-                                            <EmissiveMaterial Brush="{Binding Sphere.Brush}"/>
-                                        </MaterialGroup>
-                                    </GeometryModel3D.BackMaterial>
-                                    <GeometryModel3D.Geometry>
-                                        <MeshGeometry3D Positions="{Binding Sphere.Points}" TriangleIndices="{Binding Sphere.TriangleIndices}"/>
-                                    </GeometryModel3D.Geometry>
-                                </GeometryModel3D>
-                                <GeometryModel3D>
-                                    <GeometryModel3D.Material>
-                                        <MaterialGroup>
-                                            <DiffuseMaterial Brush="Blue"/>
-                                            <EmissiveMaterial Brush="Blue"/>
-                                        </MaterialGroup>
-                                    </GeometryModel3D.Material>
-                                    <GeometryModel3D.BackMaterial>
-                                        <MaterialGroup>
-                                            <DiffuseMaterial Brush="Blue"/>
-                                            <EmissiveMaterial Brush="Blue"/>
-                                        </MaterialGroup>
-                                    </GeometryModel3D.BackMaterial>
-                                    <GeometryModel3D.Geometry>
-                                        <MeshGeometry3D Positions="0,0,0 0,0.08,-100 0,-0.1,100" TriangleIndices="0, 2, 1"/>
-                                    </GeometryModel3D.Geometry>
-                                </GeometryModel3D>
-                                <GeometryModel3D>
-                                    <GeometryModel3D.Material>
-                                        <MaterialGroup>
-                                            <DiffuseMaterial Brush="Green"/>
-                                            <EmissiveMaterial Brush="Green"/>
-                                        </MaterialGroup>
-                                    </GeometryModel3D.Material>
-                                    <GeometryModel3D.BackMaterial>
-                                        <MaterialGroup>
-                                            <DiffuseMaterial Brush="Green"/>
-                                            <EmissiveMaterial Brush="Green"/>
-                                        </MaterialGroup>
-                                    </GeometryModel3D.BackMaterial>
-                                    <GeometryModel3D.Geometry>
-                                        <MeshGeometry3D Positions="0,0,0 0,100,-0.9 0,-10,0.1" TriangleIndices="0, 2, 1"/>
-                                    </GeometryModel3D.Geometry>
-                                </GeometryModel3D>
-                                <GeometryModel3D>
-                                    <GeometryModel3D.Material>
-                                        <MaterialGroup>
-                                            <DiffuseMaterial Brush="Red"/>
-                                            <EmissiveMaterial Brush="Red"/>
-                                        </MaterialGroup>
-                                    </GeometryModel3D.Material>
-                                    <GeometryModel3D.BackMaterial>
-                                        <MaterialGroup>
-                                            <DiffuseMaterial Brush="Red"/>
-                                            <EmissiveMaterial Brush="Red"/>
-                                        </MaterialGroup>
-                                    </GeometryModel3D.BackMaterial>
-                                    <GeometryModel3D.Geometry>
-                                        <MeshGeometry3D Positions="0,0,0 -100,0,0 100,0,0.02" TriangleIndices="0, 2, 1"/>
-                                    </GeometryModel3D.Geometry>
-                                </GeometryModel3D>
-                            </Model3DGroup>
-                        </ModelVisual3D.Content>
-                    </ModelVisual3D>
-                </Viewport3D.Children>
-            </Viewport3D>
+                                                            </RotateTransform3D.Rotation>
+                                                        </RotateTransform3D>
+                                                    </Transform3DGroup.Children>
+                                                </Transform3DGroup>
+                                            </GeometryModel3D.Transform>
+                                        </GeometryModel3D>
+                                        <GeometryModel3D>
+                                            <GeometryModel3D.Material>
+                                                <MaterialGroup>
+                                                    <DiffuseMaterial Brush="{Binding Sphere.Brush}"/>
+                                                    <EmissiveMaterial Brush="{Binding Sphere.Brush}" />
+                                                </MaterialGroup>
+                                            </GeometryModel3D.Material>
+                                            <GeometryModel3D.BackMaterial>
+                                                <MaterialGroup>
+                                                    <DiffuseMaterial Brush="{Binding Sphere.Brush}"/>
+                                                    <EmissiveMaterial Brush="{Binding Sphere.Brush}"/>
+                                                </MaterialGroup>
+                                            </GeometryModel3D.BackMaterial>
+                                            <GeometryModel3D.Geometry>
+                                                <MeshGeometry3D Positions="{Binding Sphere.Points}" TriangleIndices="{Binding Sphere.TriangleIndices}"/>
+                                            </GeometryModel3D.Geometry>
+                                        </GeometryModel3D>
+                                    </Model3DGroup>
+                                </ModelVisual3D.Content>
+                            </ModelVisual3D>
+                        </Viewport3D.Children>
+                    </Viewport3D>
+                </inter3D:Interactive3DDecorator>
+            </inter3D:TrackballDecorator>
             <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"/>
@@ -175,6 +132,25 @@
                     <Slider Minimum="0" Maximum="360" Value="{Binding ElementName=rotateZ, Path= Angle}"/>
                 </StackPanel>
             </Grid>
+        </Grid>
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="4*"/>
+                <RowDefinition Height="0.5*"/>
+                <RowDefinition/>
+                <RowDefinition Height="4*"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="1">
+                <DockPanel VerticalAlignment="Center">
+                    <Button VerticalAlignment="Center" HorizontalAlignment="Left">Выбрать файл</Button>
+                    <Border BorderBrush="Black" BorderThickness="1">
+                        <TextBlock/>
+                    </Border>
+                </DockPanel>
+            </StackPanel>
+            <StackPanel Grid.Row="2">
+                <Button VerticalAlignment="Center" HorizontalAlignment="Center" Height="25" Width="150">Рассчитать траекторию</Button>
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>

@@ -32,5 +32,10 @@ namespace TrajectoryOfSensorVisualization.View
             InitializeComponent();
 
         }
+
+        private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            Camera3D.Position = new Point3D((Camera3D.Position.X - e.Delta / 360D), (Camera3D.Position.Y - e.Delta / 360D), (Camera3D.Position.Z - e.Delta / 360D));
+        }
     }
 }

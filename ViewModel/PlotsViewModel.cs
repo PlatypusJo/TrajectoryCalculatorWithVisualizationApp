@@ -54,7 +54,7 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             PlaneXY = new(OxyColors.Green, "Y", OxyColors.Red, "X", -0.5, 0.5);
             PlaneXZ = new(OxyColors.Blue, "Z", OxyColors.Red, "X", -0.5, 0.5);
             PlaneYZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -0.5, 0.5);
-            TrajectoryInSpace = new(new(0, 0, 0.5));
+            TrajectoryInSpace = new(new(0, 0, 0));
             Sphere = new(Color.FromRgb(255, 0, 0), 0.3) { Radius = 0.5, Separators = 25 };
             //GenerateData();
             CalculateIntegral();
@@ -148,6 +148,15 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             int sampleFreq = DataReader.ReadSampleFreqFromFile("sensor_data.csv");
             double gLength = DataReader.ReadGVectorLengthFromFile("sensor_data.csv");
             accelerationVectors = RotateVectors(accelerationVectors, quaternions, gLength);
+            double avgR = 0;
+            int count = 0;
+            for (int i = 0; i < accelerationVectors.Count - 101; i += 100)
+            {
+                double r = TrajectoryCalculator.CalculateRadius(i, i + 100, accelerationVectors, quaternions, sampleFreq);
+                avgR += r;
+                count++;
+            }
+            Debug.WriteLine($"Радиус = {avgR / count}");
             DrawDisplacement(accelerationVectors, sampleFreq);
         }
         /// <summary>
@@ -158,8 +167,11 @@ namespace TrajectoryOfSensorVisualization.ViewModel
         public void DrawDisplacement(List<Vector3D> accelerationVectors, int sampleFreq)
         {
             int k = 0;
-            foreach (Vector3D vectorDisplacement in TrajectoryCalculator.CalculateAndReturnListOfDisplacements(accelerationVectors, 100, 600, sampleFreq))
+            foreach (Vector3D vectorDisplacement in TrajectoryCalculator.CalculateAndReturnListOfDisplacements(accelerationVectors, 0, 300, sampleFreq))
             {
+                PlaneXY.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Y));
+                PlaneXZ.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Z));
+                PlaneYZ.AddDataPoint(new(vectorDisplacement.Y, vectorDisplacement.Z));
                 TrajectoryInSpace.AddPointInSpace((Point3D)vectorDisplacement);
                 TrajectoryInSpace.AddPointInSpace(new(vectorDisplacement.X, vectorDisplacement.Y - 0.02, vectorDisplacement.Z));
                 if (k > 0)
