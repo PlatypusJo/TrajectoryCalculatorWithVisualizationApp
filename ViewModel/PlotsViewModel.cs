@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualBasic.FileIO;
+using Microsoft.Win32;
 using OxyPlot;
 using OxyPlot.Axes;
 using System;
@@ -14,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 using TrajectoryOfSensorVisualization.Model;
+using TrajectoryOfSensorVisualization.Util;
 
 namespace TrajectoryOfSensorVisualization.ViewModel
 {
@@ -43,6 +45,10 @@ namespace TrajectoryOfSensorVisualization.ViewModel
         /// Сфера в пространстве
         /// </summary>
         private SphereGeometry3D sphere;
+        /// <summary>
+        /// 
+        /// </summary>
+        private string filePath;
         #endregion
         
         #region Constructors
@@ -57,15 +63,51 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             TrajectoryInSpace = new(new(0, 0, 0));
             Sphere = new(Color.FromRgb(255, 0, 0), 0.3) { Radius = 0.5, Separators = 25 };
             //GenerateData();
-            CalculateIntegral();
+            //CalculateIntegral();
             #region Test rotation
-            //Vector3D v = new(1, 2, 0);
+            //Vector3D v = new(0.010925709, 0.999916115, -0.006956365);
             //Vector3D v1 = new(1, 0, 0);
             //double angle = 90;
-            //Quaternion q = new(v1, angle);
+            //Quaternion q = new(0.003478152, -1.90E-05, 0.005463035, 0.999979028);
             //Vector3D v2 = TrajectoryCalculator.RotateVectorInSpace(v, q);
             //Debug.WriteLine($"{v2.X}, {v2.Y}, {v2.Z}");
             #endregion
+        }
+        #endregion
+
+        #region Commands
+        private RelayCommand openFileCommand;
+        public RelayCommand OpenFileCommand
+        {
+            get
+            {
+                return openFileCommand ??
+                    (openFileCommand = new RelayCommand(obj =>
+                    {
+                        OpenFileDialog fileDialog = new OpenFileDialog();
+                        fileDialog.Filter = "CSV files (*.csv) | *.csv";
+                        fileDialog.Title = "Please pick a CSV source file";
+
+                        bool? success = fileDialog.ShowDialog();
+                        if (success == true)
+                        {
+                            SelectedFilePath = fileDialog.FileName;
+                        }
+                    }));
+            }
+        }
+
+        private RelayCommand calculateTrajectoryCommand;
+        public RelayCommand CalculateTrajectoryCommand
+        {
+            get
+            {
+                return calculateTrajectoryCommand ??
+                    (calculateTrajectoryCommand = new RelayCommand(obj =>
+                    {
+                        CalculateTrajectory();
+                    }));
+            }
         }
         #endregion
 
@@ -118,71 +160,46 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             List<Vector3D> accelerationVectors = new();
             List<Quaternion> quaternions = new();
             List <Vector3D> gyrVectors = new();
-            #region Old but gold
-            //using (StreamReader reader = new(@"sensor_data.csv"))
-            //{
-            //    reader.ReadLine();
-            //    string[] initialLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
-            //    double gLength = Convert.ToDouble(initialLine[5]);
-            //    sampleFreq = Convert.ToInt32(initialLine[0]);
-            //    calibCount = Convert.ToInt32(initialLine[1]);
-            //    for(int i = 0; i < calibCount + 3; i++)
-            //    {
-            //        reader.ReadLine();
-            //    }
-            //    while(!reader.EndOfStream)
-            //    {
-            //        string line = reader.ReadLine();
-            //        string[] separators = new string[] { ";" };
-            //        line = line.Replace('.', ',');
-            //        string[] data = line.Split(separators, StringSplitOptions.None);
-            //        accelerationVectors.Add(new() { X = Convert.ToDouble(data[0]), Y = Convert.ToDouble(data[1]), Z = Convert.ToDouble(data[2]) });
-            //        quaternions.Add(new() { X = Convert.ToDouble(data[7]), Y = Convert.ToDouble(data[8]), Z = Convert.ToDouble(data[9]), W = Convert.ToDouble(data[6]) });
-            //    }
-            //    accelerationVectors = RotateVectors(accelerationVectors, quaternions, gLength);
-            //}
-            //Vector3D v = TrajectoryCalculator.CalculateDisplacement(accelerationVectors, 100, 200, sampleFreq);
-            //Debug.WriteLine($"Интеграл равен: {v.X}, {v.Y}, {v.Z}");
-            #endregion
-            DataReader.ReadVectorsAndQuaternionsFromFile("sensor_data.csv", ref accelerationVectors, ref gyrVectors, ref quaternions);
-            int sampleFreq = DataReader.ReadSampleFreqFromFile("sensor_data.csv");
-            double gLength = DataReader.ReadGVectorLengthFromFile("sensor_data.csv");
-            accelerationVectors = RotateVectors(accelerationVectors, quaternions, gLength);
+            string file = "sensor_data (вперёд назад 3).csv";
+            DataReader.ReadVectorsAndQuaternionsFromFile(file, ref accelerationVectors, ref gyrVectors, ref quaternions);
+            int sampleFreq = DataReader.ReadSampleFreqFromFile(file);
+            double gLength = DataReader.ReadGVectorLengthFromFile(file);
+            var accelerationVectorsRot = RotateVectors(accelerationVectors, quaternions, gLength);
             double avgR = 0;
             int count = 0;
-            for (int i = 0; i < accelerationVectors.Count - 101; i += 100)
+            for (int i = 0; i < accelerationVectorsRot.Count - 300; i += 100)
             {
-                double r = TrajectoryCalculator.CalculateRadius(i, i + 100, accelerationVectors, quaternions, sampleFreq);
+                double r = TrajectoryCalculator.CalculateRadius(i, i + 300, accelerationVectorsRot, quaternions, sampleFreq);
                 avgR += r;
                 count++;
             }
             Debug.WriteLine($"Радиус = {avgR / count}");
-            DrawDisplacement(accelerationVectors, sampleFreq);
+            //DrawDisplacement(accelerationVectorsRot, sampleFreq);
         }
         /// <summary>
         /// Заполняет точками перемещение датчика в пространстве
         /// </summary>
         /// <param name="accelerationVectors">Векторы ускорений</param>
         /// <param name="sampleFreq">Кол-во отсчётов в секунду</param>
-        public void DrawDisplacement(List<Vector3D> accelerationVectors, int sampleFreq)
+        public void DrawDisplacement(List<Vector3D> accelerationVectors, int sampleFreq, ref PlaneModel planeXY, ref PlaneModel planeXZ, ref PlaneModel planeYZ, ref Trajectory3DModel trajectory3D)
         {
             int k = 0;
             foreach (Vector3D vectorDisplacement in TrajectoryCalculator.CalculateAndReturnListOfDisplacements(accelerationVectors, 0, 300, sampleFreq))
             {
-                PlaneXY.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Y));
-                PlaneXZ.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Z));
-                PlaneYZ.AddDataPoint(new(vectorDisplacement.Y, vectorDisplacement.Z));
-                TrajectoryInSpace.AddPointInSpace((Point3D)vectorDisplacement);
-                TrajectoryInSpace.AddPointInSpace(new(vectorDisplacement.X, vectorDisplacement.Y - 0.02, vectorDisplacement.Z));
+                planeXY.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Y));
+                planeXZ.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Z));
+                planeYZ.AddDataPoint(new(vectorDisplacement.Y, vectorDisplacement.Z));
+                trajectory3D.AddPointInSpace((Point3D)vectorDisplacement);
+                trajectory3D.AddPointInSpace(new(vectorDisplacement.X, vectorDisplacement.Y - 0.02, vectorDisplacement.Z));
                 if (k > 0)
                 {
-                    TrajectoryInSpace.AddTriangleIndice(k);
-                    TrajectoryInSpace.AddTriangleIndice(k - 1);
-                    TrajectoryInSpace.AddTriangleIndice(k + 1);
-                    TrajectoryInSpace.AddTriangleIndice(k);
+                    trajectory3D.AddTriangleIndice(k);
+                    trajectory3D.AddTriangleIndice(k - 1);
+                    trajectory3D.AddTriangleIndice(k + 1);
+                    trajectory3D.AddTriangleIndice(k);
                 }
-                TrajectoryInSpace.AddTriangleIndice(k);
-                TrajectoryInSpace.AddTriangleIndice(k + 1);
+                trajectory3D.AddTriangleIndice(k);
+                trajectory3D.AddTriangleIndice(k + 1);
                 k += 2;
                 Debug.WriteLine($"{vectorDisplacement.X}, {vectorDisplacement.Y}, {vectorDisplacement.Z}");
             }
@@ -208,6 +225,37 @@ namespace TrajectoryOfSensorVisualization.ViewModel
                 result[i] -= temporaryVector * gLength;
             }
             return result;
+        }
+        #endregion
+
+        #region Private Methods
+        private void CalculateTrajectory()
+        {
+            PlaneModel newPlaneXY = new(OxyColors.Green, "Y", OxyColors.Red, "X", -0.5, 0.5);
+            PlaneModel newPlaneXZ = new(OxyColors.Blue, "Z", OxyColors.Red, "X", -0.5, 0.5);
+            PlaneModel newPlaneYZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -0.5, 0.5);
+            Trajectory3DModel newTrajectoryInSpace = new(new(0, 0, 0));
+            List<Vector3D> accelerationVectors = new();
+            List<Quaternion> quaternions = new();
+            List<Vector3D> gyrVectors = new();
+            DataReader.ReadVectorsAndQuaternionsFromFile(filePath, ref accelerationVectors, ref gyrVectors, ref quaternions);
+            int sampleFreq = DataReader.ReadSampleFreqFromFile(filePath);
+            double gLength = DataReader.ReadGVectorLengthFromFile(filePath);
+            var accelerationVectorsRot = RotateVectors(accelerationVectors, quaternions, gLength);
+            double avgR = 0;
+            int count = 0;
+            for (int i = 0; i < accelerationVectorsRot.Count - 300; i += 100)
+            {
+                double r = TrajectoryCalculator.CalculateRadius(i, i + 300, accelerationVectorsRot, quaternions, sampleFreq);
+                avgR += r;
+                count++;
+            }
+            Debug.WriteLine($"Радиус = {avgR / count}");
+            DrawDisplacement(accelerationVectorsRot, sampleFreq, ref newPlaneXY, ref newPlaneXZ, ref newPlaneYZ, ref newTrajectoryInSpace);
+            PlaneXY = newPlaneXY;
+            PlaneXZ = newPlaneXZ;
+            PlaneYZ = newPlaneYZ;
+            TrajectoryInSpace = newTrajectoryInSpace;
         }
         #endregion
 
@@ -251,6 +299,14 @@ namespace TrajectoryOfSensorVisualization.ViewModel
         {
             get { return sphere; }
             set { sphere = value; OnPropertyChanged(nameof(Sphere)); }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string SelectedFilePath 
+        { 
+            get { return filePath; } 
+            set { filePath = value; OnPropertyChanged(nameof(SelectedFilePath)); } 
         }
         #endregion
 

@@ -9,147 +9,120 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="30*"/>
-            <ColumnDefinition Width="30*"/>
-            <ColumnDefinition Width="20*"/>
-        </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.2*"/>
+            <RowDefinition Height="0.8*"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="0.2*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="2*"/>
-                <RowDefinition Height="0.1*"/>
-                <RowDefinition Height="2*"/>
-                <RowDefinition Height="0.1*"/>
-                <RowDefinition Height="2*"/>
+                <RowDefinition Height="0.3*"/>
+                <RowDefinition Height="4*"/>
             </Grid.RowDefinitions>
-            <oxycontrols:Plot x:Name="PlotXY" Model="{Binding PlaneXY.PlotModel}" Grid.Column="0" Grid.Row="0"></oxycontrols:Plot>
-            <oxycontrols:Plot x:Name="PlotXZ" Model="{Binding PlaneXZ.PlotModel}" Grid.Column="0" Grid.Row="2"></oxycontrols:Plot>
-            <oxycontrols:Plot x:Name="PlotYZ" Model="{Binding PlaneYZ.PlotModel}" Grid.Column="0" Grid.Row="4"></oxycontrols:Plot>
-        </Grid>
-        <Grid Grid.Column="1" MouseWheel="Grid_MouseWheel" Background="#00000000">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="3*"/>
-                <RowDefinition Height="1*"/>
-            </Grid.RowDefinitions>
-            <inter3D:TrackballDecorator Grid.Row="0">
-                <inter3D:Interactive3DDecorator>
-                    <Viewport3D>
-                        <Viewport3D.Camera>
-                            <PerspectiveCamera x:Name="Camera3D" Position="2,2,2" LookDirection="-2,-2,-2"
-                               UpDirection="0,0.1,0" FieldOfView="30"/>
-                        </Viewport3D.Camera>
-                        <Viewport3D.Children>
-                            <inter3D:ScreenSpaceLines3D Points="0, 0, -20 0, 0, 20" Thickness="0.7" Color="Blue"/>
-                            <inter3D:ScreenSpaceLines3D Points="0, -20, 0 0, 20, 0" Thickness="0.7" Color="Green"/>
-                            <inter3D:ScreenSpaceLines3D Points="-20, 0, 0 20, 0, 0" Thickness="0.7" Color="Red"/>
-                            <ModelVisual3D>
-                                <ModelVisual3D.Content>
-                                    <Model3DGroup>
-                                        <DirectionalLight Color="White" Direction="1,0,-1"/>
-                                        <AmbientLight Color="Black"/>
-                                        <GeometryModel3D>
-                                            <GeometryModel3D.Material>
-                                                <MaterialGroup>
-                                                    <DiffuseMaterial Brush="#1dacd6"/>
-                                                    <EmissiveMaterial Brush="#330000ff"/>
-                                                </MaterialGroup>
-                                            </GeometryModel3D.Material>
-                                            <GeometryModel3D.BackMaterial>
-                                                <MaterialGroup>
-                                                    <DiffuseMaterial Brush="#1dacd6"/>
-                                                    <EmissiveMaterial Brush="#330000ff"/>
-                                                </MaterialGroup>
-                                            </GeometryModel3D.BackMaterial>
-                                            <GeometryModel3D.Geometry>
-                                                <MeshGeometry3D Positions="{Binding TrajectoryInSpace.PointsInSpace}" TriangleIndices="{Binding TrajectoryInSpace.TriangleIndices}"/>
-                                            </GeometryModel3D.Geometry>
-                                            <GeometryModel3D.Transform>
-                                                <Transform3DGroup>
-                                                    <Transform3DGroup.Children>
-                                                        <RotateTransform3D>
-                                                            <RotateTransform3D.Rotation>
-                                                                <AxisAngleRotation3D Axis="1,0,0" 
-                                                            Angle="0" x:Name="rotateX"/>
-                                                            </RotateTransform3D.Rotation>
-                                                        </RotateTransform3D>
-                                                        <RotateTransform3D>
-                                                            <RotateTransform3D.Rotation>
-                                                                <AxisAngleRotation3D Axis="0,1,0" 
-                                                            Angle="0" x:Name="rotateY"/>
-                                                            </RotateTransform3D.Rotation>
-                                                        </RotateTransform3D>
-                                                        <RotateTransform3D>
-                                                            <RotateTransform3D.Rotation>
-                                                                <AxisAngleRotation3D Axis="0,0,1" 
-                                                            Angle="0" x:Name="rotateZ"/>
-                                                            </RotateTransform3D.Rotation>
-                                                        </RotateTransform3D>
-                                                    </Transform3DGroup.Children>
-                                                </Transform3DGroup>
-                                            </GeometryModel3D.Transform>
-                                        </GeometryModel3D>
-                                        <GeometryModel3D>
-                                            <GeometryModel3D.Material>
-                                                <MaterialGroup>
-                                                    <DiffuseMaterial Brush="{Binding Sphere.Brush}"/>
-                                                    <EmissiveMaterial Brush="{Binding Sphere.Brush}" />
-                                                </MaterialGroup>
-                                            </GeometryModel3D.Material>
-                                            <GeometryModel3D.BackMaterial>
-                                                <MaterialGroup>
-                                                    <DiffuseMaterial Brush="{Binding Sphere.Brush}"/>
-                                                    <EmissiveMaterial Brush="{Binding Sphere.Brush}"/>
-                                                </MaterialGroup>
-                                            </GeometryModel3D.BackMaterial>
-                                            <GeometryModel3D.Geometry>
-                                                <MeshGeometry3D Positions="{Binding Sphere.Points}" TriangleIndices="{Binding Sphere.TriangleIndices}"/>
-                                            </GeometryModel3D.Geometry>
-                                        </GeometryModel3D>
-                                    </Model3DGroup>
-                                </ModelVisual3D.Content>
-                            </ModelVisual3D>
-                        </Viewport3D.Children>
-                    </Viewport3D>
-                </inter3D:Interactive3DDecorator>
-            </inter3D:TrackballDecorator>
-            <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.5*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="0.5*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="0.5*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" Text="Траектория в проекциях"/>
+            <TextBlock FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="3" Text="Траектория в пространстве"/>
+            <Grid Grid.Row="1" Grid.Column="1">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
-                <StackPanel VerticalAlignment="Center" Grid.Row="0">
-                    <TextBlock Foreground="Red" Text="Вращение по X"/>
-                    <Slider Minimum="0" Maximum="360" Value="{Binding ElementName=rotateX, Path= Angle}"/>
-                </StackPanel>
-                <StackPanel VerticalAlignment="Center" Grid.Row="1">
-                    <TextBlock Foreground="Green" Text="Вращение по Y"/>
-                    <Slider Minimum="0" Maximum="360" Value="{Binding ElementName=rotateY, Path= Angle}"/>
-                </StackPanel>
-                <StackPanel VerticalAlignment="Center" Grid.Row="2">
-                    <TextBlock Foreground="Blue" Text="Вращение по Z"/>
-                    <Slider Minimum="0" Maximum="360" Value="{Binding ElementName=rotateZ, Path= Angle}"/>
-                </StackPanel>
+                <oxycontrols:Plot x:Name="PlotXY" Model="{Binding PlaneXY.PlotModel, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0"></oxycontrols:Plot>
+                <oxycontrols:Plot x:Name="PlotXZ" Model="{Binding PlaneXZ.PlotModel, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1"></oxycontrols:Plot>
+                <oxycontrols:Plot x:Name="PlotYZ" Model="{Binding PlaneYZ.PlotModel, UpdateSourceTrigger=PropertyChanged}" Grid.Row="2"></oxycontrols:Plot>
+            </Grid>
+            <Grid Grid.Row="1" Grid.Column="3">
+                <Grid MouseWheel="Grid_MouseWheel" Background="#00000000">
+                    <inter3D:TrackballDecorator>
+                        <inter3D:Interactive3DDecorator>
+                            <Viewport3D>
+                                <Viewport3D.Camera>
+                                    <PerspectiveCamera x:Name="Camera3D" Position="2,2,2" LookDirection="-2,-2,-2"
+                               UpDirection="0,0.1,0" FieldOfView="30"/>
+                                </Viewport3D.Camera>
+                                <Viewport3D.Children>
+                                    <inter3D:ScreenSpaceLines3D Points="0, 0, -20 0, 0, 20" Thickness="0.7" Color="Blue"/>
+                                    <inter3D:ScreenSpaceLines3D Points="0, -20, 0 0, 20, 0" Thickness="0.7" Color="Green"/>
+                                    <inter3D:ScreenSpaceLines3D Points="-20, 0, 0 20, 0, 0" Thickness="0.7" Color="Red"/>
+                                    <ModelVisual3D>
+                                        <ModelVisual3D.Content>
+                                            <Model3DGroup>
+                                                <DirectionalLight Color="White" Direction="1,0,-1"/>
+                                                <AmbientLight Color="Black"/>
+                                                <GeometryModel3D>
+                                                    <GeometryModel3D.Material>
+                                                        <MaterialGroup>
+                                                            <DiffuseMaterial Brush="#1dacd6"/>
+                                                            <EmissiveMaterial Brush="#330000ff"/>
+                                                        </MaterialGroup>
+                                                    </GeometryModel3D.Material>
+                                                    <GeometryModel3D.BackMaterial>
+                                                        <MaterialGroup>
+                                                            <DiffuseMaterial Brush="#1dacd6"/>
+                                                            <EmissiveMaterial Brush="#330000ff"/>
+                                                        </MaterialGroup>
+                                                    </GeometryModel3D.BackMaterial>
+                                                    <GeometryModel3D.Geometry>
+                                                        <MeshGeometry3D Positions="{Binding TrajectoryInSpace.PointsInSpace, UpdateSourceTrigger=PropertyChanged}" TriangleIndices="{Binding TrajectoryInSpace.TriangleIndices, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    </GeometryModel3D.Geometry>
+                                                </GeometryModel3D>
+                                                <GeometryModel3D>
+                                                    <GeometryModel3D.Material>
+                                                        <MaterialGroup>
+                                                            <DiffuseMaterial Brush="{Binding Sphere.Brush}"/>
+                                                            <EmissiveMaterial Brush="{Binding Sphere.Brush}" />
+                                                        </MaterialGroup>
+                                                    </GeometryModel3D.Material>
+                                                    <GeometryModel3D.BackMaterial>
+                                                        <MaterialGroup>
+                                                            <DiffuseMaterial Brush="{Binding Sphere.Brush}"/>
+                                                            <EmissiveMaterial Brush="{Binding Sphere.Brush}"/>
+                                                        </MaterialGroup>
+                                                    </GeometryModel3D.BackMaterial>
+                                                    <GeometryModel3D.Geometry>
+                                                        <MeshGeometry3D Positions="{Binding Sphere.Points}" TriangleIndices="{Binding Sphere.TriangleIndices}"/>
+                                                    </GeometryModel3D.Geometry>
+                                                </GeometryModel3D>
+                                            </Model3DGroup>
+                                        </ModelVisual3D.Content>
+                                    </ModelVisual3D>
+                                </Viewport3D.Children>
+                            </Viewport3D>
+                        </inter3D:Interactive3DDecorator>
+                    </inter3D:TrackballDecorator>
+                </Grid>
             </Grid>
         </Grid>
-        <Grid Grid.Column="2">
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.5*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="0.5*"/>
+            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="4*"/>
-                <RowDefinition Height="0.5*"/>
-                <RowDefinition/>
-                <RowDefinition Height="4*"/>
-            </Grid.RowDefinitions>
-            <StackPanel Grid.Row="1">
-                <DockPanel VerticalAlignment="Center">
-                    <Button VerticalAlignment="Center" HorizontalAlignment="Left">Выбрать файл</Button>
-                    <Border BorderBrush="Black" BorderThickness="1">
-                        <TextBlock/>
-                    </Border>
-                </DockPanel>
-            </StackPanel>
-            <StackPanel Grid.Row="2">
-                <Button VerticalAlignment="Center" HorizontalAlignment="Center" Height="25" Width="150">Рассчитать траекторию</Button>
+                    <RowDefinition Height="0.5*"/>
+                    <RowDefinition Height="4*"/>
+                    <RowDefinition Height="4*"/>
+                    <RowDefinition Height="0.5*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="1" Grid.Column="1">
+                    <DockPanel VerticalAlignment="Center">
+                        <Button FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" Command="{Binding OpenFileCommand}">Выбрать файл</Button>
+                        <Border BorderBrush="Black" BorderThickness="1">
+                            <TextBlock FontSize="14" Text="{Binding SelectedFilePath}"/>
+                        </Border>
+                    </DockPanel>
+                </StackPanel>
+            <StackPanel Grid.Row="2" Grid.Column="1">
+                <Button FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Command="{Binding CalculateTrajectoryCommand}">Рассчитать траекторию</Button>
             </StackPanel>
         </Grid>
     </Grid>
