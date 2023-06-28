@@ -19,8 +19,10 @@ namespace TrajectoryOfSensorVisualization.Model
         /// </summary>
         /// <param name="colorOfBrush">Цвет сферы</param>
         /// <param name="opacityOfBrush">Прозрачность сферы от 0 до 1</param>
-        public SphereGeometry3D(Color colorOfBrush, double opacityOfBrush)
+        public SphereGeometry3D(double radius, Color colorOfBrush, double opacityOfBrush)
         { 
+            Radius = radius;
+            Separators = (int)(radius * 50);
             brush = new SolidColorBrush(colorOfBrush)
             {
                 Opacity = opacityOfBrush

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media.Media3D;
 
 namespace TrajectoryOfSensorVisualization.Model
@@ -187,6 +188,129 @@ namespace TrajectoryOfSensorVisualization.Model
             return displacementVectors;
         }
         /// <summary>
+        /// Интегрирование методом прямоугольников в среднем
+        /// </summary>
+        /// <param name="accelerationVectors">Список векторов ускорений</param>
+        /// <param name="start">Начало с какого вектора начинаются вычисления</param>
+        /// <param name="countOfSamples">Количество отсчётов</param>
+        /// <param name="sampleRate">Частота дискретизации</param>
+        /// <returns>Список векторов перемещения</returns>
+        public static List<Vector3D> CalculateIntegralAvgRectangle(List<Vector3D> accelerationVectors, int start, int countOfSamples, int sampleRate)
+        {
+            double deltaT = 1.0 / sampleRate;
+            Vector3D velocity;
+            Vector3D displacement;
+            List<Vector3D> displacementVectors = new();
+            List<Vector3D> velocityVectors = new();
+            for (int i = start; i < start + countOfSamples; i++)
+            {
+                velocity += (accelerationVectors[i] * (deltaT + 0.5)) * deltaT;
+                velocityVectors.Add(velocity);
+            }
+            for(int i = 0; i < velocityVectors.Count; i++)
+            {
+                displacement += (velocityVectors[i] * (deltaT + 0.5)) * deltaT;
+                displacementVectors.Add(displacement);
+            }
+            return displacementVectors;
+        }
+        /// <summary>
+        /// Интегрирование методом трапеций
+        /// </summary>
+        /// <param name="accelerationVectors">Список векторов ускорений</param>
+        /// <param name="start">Начало с какого вектора начинаются вычисления</param>
+        /// <param name="countOfSamples">Количество отсчётов</param>
+        /// <param name="sampleRate">Частота дискретизации</param>
+        /// <returns>Список векторов перемещения</returns>
+        public static List<Vector3D> CalculateIntegralTrapezoidal(List<Vector3D> accelerationVectors, int start, int countOfSamples, int sampleRate)
+        {
+            double deltaT = 1.0 / sampleRate;
+            Vector3D velocity;
+            Vector3D displacement;
+            List<Vector3D> displacementVectors = new();
+            List<Vector3D> velocityVectors = new();
+            for (int i = start; i < start + countOfSamples - 1; i++)
+            {
+                velocity += (accelerationVectors[i] + accelerationVectors[i + 1]) * 0.5 * deltaT;
+                velocityVectors.Add(velocity);
+            }
+            for (int i = 0; i < velocityVectors.Count - 1; i++)
+            {
+                displacement += (velocityVectors[i] + velocityVectors[i + 1]) * 0.5 * deltaT;
+                displacementVectors.Add(displacement);
+            }
+            return displacementVectors;
+        }
+        /// <summary>
+        /// Интегрирует методом парабол
+        /// </summary>
+        /// <param name="accelerationVectors">Список векторов ускорений</param>
+        /// <param name="start">Начало с какого вектора начинаются вычисления</param>
+        /// <param name="countOfSamples">Количество отсчётов</param>
+        /// <param name="sampleRate">Частота дискретизации</param>
+        /// <returns>Список векторов перемещения</returns>
+        public static List<Vector3D> CalculateIntegralParabols(List<Vector3D> accelerationVectors, int start, int countOfSamples, int sampleRate)
+        {
+            double deltaT = 1.0 / sampleRate;
+            Vector3D velocity;
+            Vector3D displacement;
+            List<Vector3D> displacementVectors = new();
+            List<Vector3D> velocityVectors = new();
+            for (int i = start; i < start + countOfSamples - 2; i++)
+            {
+                velocity += (accelerationVectors[i] + 4 * accelerationVectors[i + 1] + accelerationVectors[i + 2]) * deltaT / 3;
+                velocityVectors.Add(velocity);
+            }
+            for (int i = 0; i < velocityVectors.Count - 2; i++)
+            {
+                displacement += (velocityVectors[i] + 4 * velocityVectors[i + 1] + velocityVectors[i + 2]) * deltaT / 3;
+                displacementVectors.Add(displacement);
+            }
+            return displacementVectors;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="displacementVectors"></param>
+        /// <param name="sizeOfWindow"></param>
+        /// <returns></returns>
+        public static List<Vector3D> AverageFloatingWindow(List<Vector3D> displacementVectors, int sizeOfWindow)
+        {
+            int remainder = sizeOfWindow / 2;
+            List<Vector3D> averageVectors = new();
+            Vector3D sum;
+            for (int i = 0; i <= displacementVectors.Count - sizeOfWindow; i++)
+            {
+                sum = displacementVectors[i];
+                for (int j = i + 1; j < i + sizeOfWindow; j++)
+                {
+                    sum += displacementVectors[j];
+                }
+                averageVectors.Add(sum / sizeOfWindow);
+            }
+            for (int i = 0; i < remainder; i++)
+            {
+                averageVectors.Insert(0, averageVectors[0]);
+                averageVectors.Add(averageVectors.Last());
+            }
+            return averageVectors;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="minuend"></param>
+        /// <param name="subtrahend"></param>
+        /// <returns></returns>
+        public static List<Vector3D> SubstractListsOfVector3D(List<Vector3D> minuend, List<Vector3D> subtrahend)
+        {
+            List<Vector3D> result = new();
+            for(int i = 0; i < minuend.Count; i++)
+            {
+                result.Add(minuend[i] - subtrahend[i]);
+            }
+            return result;
+        }
+        /// <summary>
         /// Вычисляет точки для построения траектории движения по сфере
         /// </summary>
         /// <param name="startingPoint">Начальная точка</param>
@@ -238,7 +362,7 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <returns>Радиус сферы</returns>
         public static double CalculateRadius(int t1, int t2, List<Vector3D> accVectors, List<Quaternion> quaternion, int sampleRate)
         {
-            double d2 = CalculateDisplacement(accVectors, t1, t2 - t1, sampleRate).Length;
+            double d2 = CalculateIntegralAvgRectangle(accVectors, t1, t2 - t1, sampleRate).Last().Length;
             double d1 = CalculateDistanceBetweenTwoPoints(CalculateUnitVector(quaternion[t1]), CalculateUnitVector(quaternion[t2]));
             return d2 / d1;
         }

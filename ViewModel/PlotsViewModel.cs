@@ -49,8 +49,13 @@ namespace TrajectoryOfSensorVisualization.ViewModel
         /// 
         /// </summary>
         private string filePath;
+
+        //private PlaneModel planeXY1;
+        //private PlaneModel planeXZ1;
+        //private PlaneModel planeYZ1;
+        //private Trajectory3DModel trajectoryInSpace1;
         #endregion
-        
+
         #region Constructors
         /// <summary>
         /// Конструктор ViewModel
@@ -61,7 +66,7 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             PlaneXZ = new(OxyColors.Blue, "Z", OxyColors.Red, "X", -0.5, 0.5);
             PlaneYZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -0.5, 0.5);
             TrajectoryInSpace = new(new(0, 0, 0));
-            Sphere = new(Color.FromRgb(255, 0, 0), 0.3) { Radius = 0.5, Separators = 25 };
+            Sphere = new(0.5, Color.FromRgb(255, 0, 0), 0.3);
             //GenerateData();
             //CalculateIntegral();
             #region Test rotation
@@ -106,6 +111,13 @@ namespace TrajectoryOfSensorVisualization.ViewModel
                     (calculateTrajectoryCommand = new RelayCommand(obj =>
                     {
                         CalculateTrajectory();
+                        //Task.Run(CalculateTrajectory).ContinueWith(delegate
+                        //{
+                        //    PlaneXY = planeXY1;
+                        //    PlaneXZ = planeXZ1;
+                        //    PlaneYZ = planeYZ1;
+                        //    TrajectoryInSpace = trajectoryInSpace1;
+                        //});
                     }));
             }
         }
@@ -184,7 +196,9 @@ namespace TrajectoryOfSensorVisualization.ViewModel
         public void DrawDisplacement(List<Vector3D> accelerationVectors, int sampleFreq, ref PlaneModel planeXY, ref PlaneModel planeXZ, ref PlaneModel planeYZ, ref Trajectory3DModel trajectory3D)
         {
             int k = 0;
-            foreach (Vector3D vectorDisplacement in TrajectoryCalculator.CalculateAndReturnListOfDisplacements(accelerationVectors, 0, 300, sampleFreq))
+            List<Vector3D> displacementVectors = TrajectoryCalculator.CalculateIntegralAvgRectangle(accelerationVectors, 0, accelerationVectors.Count, sampleFreq);
+            List<Vector3D> avgVectors = TrajectoryCalculator.AverageFloatingWindow(displacementVectors, 101);
+            foreach (Vector3D vectorDisplacement in TrajectoryCalculator.SubstractListsOfVector3D(displacementVectors, avgVectors))
             {
                 planeXY.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Y));
                 planeXZ.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Z));
@@ -244,9 +258,9 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             var accelerationVectorsRot = RotateVectors(accelerationVectors, quaternions, gLength);
             double avgR = 0;
             int count = 0;
-            for (int i = 0; i < accelerationVectorsRot.Count - 300; i += 100)
+            for (int i = 0; i < 400; i += 10)
             {
-                double r = TrajectoryCalculator.CalculateRadius(i, i + 300, accelerationVectorsRot, quaternions, sampleFreq);
+                double r = TrajectoryCalculator.CalculateRadius(i, i + 100, accelerationVectorsRot, quaternions, sampleFreq);
                 avgR += r;
                 count++;
             }
@@ -256,7 +270,19 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             PlaneXZ = newPlaneXZ;
             PlaneYZ = newPlaneYZ;
             TrajectoryInSpace = newTrajectoryInSpace;
+            //App.Current.Dispatcher.Invoke(() =>
+            //{
+            //    NewMethod(newPlaneXY, newPlaneXZ, newPlaneYZ, newTrajectoryInSpace);
+            //});
         }
+
+        //private void NewMethod(PlaneModel p1, PlaneModel p2, PlaneModel p3, Trajectory3DModel trajectory)
+        //{
+        //    planeXY1 = p1;
+        //    planeXZ1 = p2;
+        //    planeYZ1 = p3;
+        //    trajectoryInSpace1 = trajectory;
+        //}
         #endregion
 
         #region Properties
