@@ -11,6 +11,7 @@ using System.Linq;
 //using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
@@ -24,36 +25,130 @@ namespace TrajectoryOfSensorVisualization.ViewModel
     /// </summary>
     public class PlotsViewModel : INotifyPropertyChanged
     {
-        #region Private Fields
+        #region Properties and fields
         /// <summary>
         /// График на плоскости XY
         /// </summary>
         private PlaneModel planeXY;
+        public PlaneModel PlaneXY
+        {
+            get { return planeXY; }
+            set { planeXY = value; OnPropertyChanged(nameof(PlaneXY)); }
+        }
         /// <summary>
         /// График на плоскости XZ
         /// </summary>
         private PlaneModel planeXZ;
+        public PlaneModel PlaneXZ
+        {
+            get { return planeXZ; }
+            set { planeXZ = value; OnPropertyChanged(nameof(PlaneXZ)); }
+        }
         /// <summary>
         /// График на плоскости YZ
         /// </summary>
         private PlaneModel planeYZ;
+        public PlaneModel PlaneYZ
+        {
+            get { return planeYZ; }
+            set { planeYZ = value; OnPropertyChanged(nameof(PlaneYZ)); }
+        }
         /// <summary>
         /// Траектория в пространстве
         /// </summary>
         private Trajectory3DModel trajectoryInSpace;
+        public Trajectory3DModel TrajectoryInSpace
+        {
+            get { return trajectoryInSpace; }
+            set { trajectoryInSpace = value; OnPropertyChanged(nameof(TrajectoryInSpace)); }
+        }
         /// <summary>
         /// Сфера в пространстве
         /// </summary>
         private SphereGeometry3D sphere;
+        public SphereGeometry3D Sphere
+        {
+            get { return sphere; }
+            set { sphere = value; OnPropertyChanged(nameof(Sphere)); }
+        }
         /// <summary>
-        /// 
+        /// Путь к файлу с данными
         /// </summary>
         private string filePath;
-
-        //private PlaneModel planeXY1;
-        //private PlaneModel planeXZ1;
-        //private PlaneModel planeYZ1;
-        //private Trajectory3DModel trajectoryInSpace1;
+        public string SelectedFilePath
+        {
+            get { return filePath; }
+            set { filePath = value; OnPropertyChanged(nameof(SelectedFilePath)); }
+        }
+        /// <summary>
+        /// Радиус сферы (метры)
+        /// </summary>
+        private double radius;
+        public string Radius
+        {
+            get => radius.ToString();
+            set
+            {
+                try
+                {
+                    radius = Convert.ToDouble(value.Replace(".", ","));
+                }
+                catch
+                {
+                    string message = "Неправильный формат введённых данных. В поле ввода \"Радиус сферы\" допустимы только действительные числа";
+                    string caption = "Ошибка в формате данных";
+                    MessageBoxButton button = MessageBoxButton.OK;
+                    MessageBoxImage icon = MessageBoxImage.Error;
+                    MessageBox.Show(message, caption, button, icon);
+                }
+            }
+        }
+        /// <summary>
+        /// Размер окна фильтрации (условные единицы)
+        /// </summary>
+        private int sizeOfFloatingWindow;
+        public string SizeOfFloatingWindow
+        {
+            get => sizeOfFloatingWindow.ToString();
+            set 
+            { 
+                try
+                {
+                    sizeOfFloatingWindow = Convert.ToInt32(value); 
+                }
+                catch
+                {
+                    string message = "Неправильный формат введённых данных. В поле ввода \"Плавающее окно\" допустимы только целые числа";
+                    string caption = "Ошибка в формате данных";
+                    MessageBoxButton button = MessageBoxButton.OK;
+                    MessageBoxImage icon = MessageBoxImage.Error;
+                    MessageBox.Show(message, caption, button, icon);
+                }
+            }
+        }
+        /// <summary>
+        /// Время интегрироввания (секунды)
+        /// </summary>
+        private double integrationTime;
+        public string IntegrationTime
+        {
+            get => integrationTime.ToString();
+            set
+            {
+                try
+                {
+                    integrationTime = Convert.ToDouble(value.Replace(".", ","));
+                }
+                catch
+                {
+                    string message = "Неправильный формат введённых данных. В поле ввода \"Время интегрирования\" допустимы только действительные числа";
+                    string caption = "Ошибка в формате данных";
+                    MessageBoxButton button = MessageBoxButton.OK;
+                    MessageBoxImage icon = MessageBoxImage.Error;
+                    MessageBox.Show(message, caption, button, icon);
+                }
+            }
+        }
         #endregion
 
         #region Constructors
@@ -62,21 +157,11 @@ namespace TrajectoryOfSensorVisualization.ViewModel
         /// </summary>
         public PlotsViewModel()
         {
-            PlaneXY = new(OxyColors.Green, "Y", OxyColors.Red, "X", -0.5, 0.5);
-            PlaneXZ = new(OxyColors.Blue, "Z", OxyColors.Red, "X", -0.5, 0.5);
-            PlaneYZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -0.5, 0.5);
-            TrajectoryInSpace = new(new(0, 0, 0));
-            Sphere = new(0.5, Color.FromRgb(255, 0, 0), 0.3);
-            //GenerateData();
-            //CalculateIntegral();
-            #region Test rotation
-            //Vector3D v = new(0.010925709, 0.999916115, -0.006956365);
-            //Vector3D v1 = new(1, 0, 0);
-            //double angle = 90;
-            //Quaternion q = new(0.003478152, -1.90E-05, 0.005463035, 0.999979028);
-            //Vector3D v2 = TrajectoryCalculator.RotateVectorInSpace(v, q);
-            //Debug.WriteLine($"{v2.X}, {v2.Y}, {v2.Z}");
-            #endregion
+            PlaneXY = new(OxyColors.Green, "Y", OxyColors.Red, "X", -100, 100);
+            PlaneXZ = new(OxyColors.Blue, "Z", OxyColors.Red, "X", -100, 100);
+            PlaneYZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -100, 100);
+            TrajectoryInSpace = new();
+            Sphere = new(0, Color.FromRgb(255, 0, 0), 0.3);
         }
         #endregion
 
@@ -111,94 +196,70 @@ namespace TrajectoryOfSensorVisualization.ViewModel
                     (calculateTrajectoryCommand = new RelayCommand(obj =>
                     {
                         CalculateTrajectory();
-                        //Task.Run(CalculateTrajectory).ContinueWith(delegate
-                        //{
-                        //    PlaneXY = planeXY1;
-                        //    PlaneXZ = planeXZ1;
-                        //    PlaneYZ = planeYZ1;
-                        //    TrajectoryInSpace = trajectoryInSpace1;
-                        //});
                     }));
             }
         }
         #endregion
 
-        #region Public Methods
+        #region Private Methods
         /// <summary>
-        /// Генирирует данные для отображения во View
+        /// Вычисляет траекторию перемещения датчика
         /// </summary>
-        public void GenerateData()
+        private void CalculateTrajectory()
         {
-            Random random = new Random();
-            double radius = 0.5;
-            Vector3D initialPoint = new(0, 0, 0.5);
-            int k = 0;
-            for (double t = 0.01; t < 0.1; t += 0.01)
+            PlaneModel newPlaneXY = new(OxyColors.Green, "Y", OxyColors.Red, "X", -radius, radius);
+            PlaneModel newPlaneXZ = new(OxyColors.Blue, "Z", OxyColors.Red, "X", -radius, radius);
+            PlaneModel newPlaneYZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -radius, radius);
+            Trajectory3DModel newTrajectoryInSpace = new();
+            List<Vector3D> accelerationVectors = DataReader.ReadAccVectorsFromFile(SelectedFilePath);
+            List<Quaternion> quaternions = DataReader.ReadQuaternionsFromFile(SelectedFilePath);
+            int sampleFreq = DataReader.ReadSampleFreqFromFile(SelectedFilePath);
+            double gLength = DataReader.ReadGVectorLengthFromFile(SelectedFilePath);
+            try
             {
-                double w1 = random.NextDouble() * 500.0 + 1.0;
-                double w2 = random.NextDouble() * 500.0 + 1.0;
-                double a = random.NextDouble() * 140.0 + 1.0;
-                double b = random.NextDouble() * 140.0 + 1.0;
-                
-                double alphaAngle = TrajectoryCalculator.CalculateAngleAlpha(a, w1, t);
-                double betaAngle = TrajectoryCalculator.CalculateAngleBeta(b, w2, t); // Math.PI / 180 * 63
-                Vector3D endPoint = TrajectoryCalculator.CalculateLocationInSpace(radius, alphaAngle, betaAngle);
-                foreach (Point3D pointInSpace in TrajectoryCalculator.CalculatePointsOfTrajectoryInSpace(initialPoint, endPoint, radius))
-                {
-                    PlaneXY.AddDataPoint(new(pointInSpace.X, pointInSpace.Y));
-                    PlaneXZ.AddDataPoint(new(pointInSpace.X, pointInSpace.Z));
-                    PlaneYZ.AddDataPoint(new(pointInSpace.Y, pointInSpace.Z));
-                    TrajectoryInSpace.AddPointInSpace(pointInSpace);
-                    TrajectoryInSpace.AddPointInSpace(new(pointInSpace.X, pointInSpace.Y - 0.02, pointInSpace.Z));
-                    if (k > 0)
-                    {
-                        TrajectoryInSpace.AddTriangleIndice(k);
-                        TrajectoryInSpace.AddTriangleIndice(k - 1);
-                        TrajectoryInSpace.AddTriangleIndice(k + 1);
-                        TrajectoryInSpace.AddTriangleIndice(k);
-                    }
-                    TrajectoryInSpace.AddTriangleIndice(k);
-                    TrajectoryInSpace.AddTriangleIndice(k + 1);
-                    k += 2;
-                }
-                initialPoint = endPoint;
+                accelerationVectors = DataReader.ReadAccVectorsFromFile(SelectedFilePath);
+                quaternions = DataReader.ReadQuaternionsFromFile(SelectedFilePath);
+                sampleFreq = DataReader.ReadSampleFreqFromFile(SelectedFilePath);
+                gLength = DataReader.ReadGVectorLengthFromFile(SelectedFilePath);
             }
-        }
-        /// <summary>
-        /// Вычисляет перемещение датчика по данным из файла
-        /// </summary>
-        public void CalculateIntegral()
-        {
-            List<Vector3D> accelerationVectors = new();
-            List<Quaternion> quaternions = new();
-            List <Vector3D> gyrVectors = new();
-            string file = "sensor_data (вперёд назад 3).csv";
-            DataReader.ReadVectorsAndQuaternionsFromFile(file, ref accelerationVectors, ref gyrVectors, ref quaternions);
-            int sampleFreq = DataReader.ReadSampleFreqFromFile(file);
-            double gLength = DataReader.ReadGVectorLengthFromFile(file);
-            var accelerationVectorsRot = RotateVectors(accelerationVectors, quaternions, gLength);
-            double avgR = 0;
-            int count = 0;
-            for (int i = 0; i < accelerationVectorsRot.Count - 300; i += 100)
+            catch
             {
-                double r = TrajectoryCalculator.CalculateRadius(i, i + 300, accelerationVectorsRot, quaternions, sampleFreq);
-                avgR += r;
-                count++;
+                string message = "Возможно данные в файле имеют некорректный вид.";
+                string caption = "Ошибка при чтении файла";
+                MessageBoxButton button = MessageBoxButton.OK;
+                MessageBoxImage icon = MessageBoxImage.Error;
+                MessageBox.Show(message, caption, button, icon);
             }
-            Debug.WriteLine($"Радиус = {avgR / count}");
-            //DrawDisplacement(accelerationVectorsRot, sampleFreq);
+            finally
+            {
+                List<Vector3D> accelerationVectorsRot = MathToolsToCalculatingTrajectory.RotateVectorsInSpace(accelerationVectors, quaternions, gLength);
+                CalculatePointsOfTrajectory(accelerationVectorsRot, quaternions, sampleFreq, newPlaneXY, newPlaneXZ, newPlaneYZ, newTrajectoryInSpace);
+                PlaneXY = newPlaneXY;
+                PlaneXZ = newPlaneXZ;
+                PlaneYZ = newPlaneYZ;
+                TrajectoryInSpace = newTrajectoryInSpace;
+                Sphere = new(radius, Color.FromRgb(255, 0, 0), 0.3);
+            }
+            
         }
         /// <summary>
         /// Заполняет точками перемещение датчика в пространстве
         /// </summary>
-        /// <param name="accelerationVectors">Векторы ускорений</param>
-        /// <param name="sampleFreq">Кол-во отсчётов в секунду</param>
-        public void DrawDisplacement(List<Vector3D> accelerationVectors, int sampleFreq, ref PlaneModel planeXY, ref PlaneModel planeXZ, ref PlaneModel planeYZ, ref Trajectory3DModel trajectory3D)
+        /// <param name="accelerationVectors">Векторы ускорений полученные с датчика</param>
+        /// <param name="quaternions">Кватернионы поворота</param>
+        /// <param name="sampleFreq">Частота отсчётов</param>
+        /// <param name="planeXY">Плоскость XY</param>
+        /// <param name="planeXZ">Плоскость XZ</param>
+        /// <param name="planeYZ">Плоскость YZ</param>
+        /// <param name="trajectory3D">Траектория движения датчика в пространстве</param>
+        private void CalculatePointsOfTrajectory(List<Vector3D> accelerationVectors, List<Quaternion> quaternions, int sampleFreq, PlaneModel planeXY, PlaneModel planeXZ, PlaneModel planeYZ, Trajectory3DModel trajectory3D)
         {
             int k = 0;
-            List<Vector3D> displacementVectors = TrajectoryCalculator.CalculateIntegralAvgRectangle(accelerationVectors, 0, accelerationVectors.Count, sampleFreq);
-            List<Vector3D> avgVectors = TrajectoryCalculator.AverageFloatingWindow(displacementVectors, 101);
-            foreach (Vector3D vectorDisplacement in TrajectoryCalculator.SubstractListsOfVector3D(displacementVectors, avgVectors))
+            List<Vector3D> displacementVectors = MathToolsToCalculatingTrajectory.CalculateIntegralAvgRectangle(accelerationVectors, 0, (int)(integrationTime * sampleFreq), sampleFreq);
+            List<Vector3D> filtredVectors = MathToolsToCalculatingTrajectory.FiltrationByFloatingWindow(displacementVectors, sizeOfFloatingWindow);
+            List<Vector3D> noiseVectors = MathToolsToCalculatingTrajectory.CalculateListOfNoiseVectors(displacementVectors, filtredVectors);
+            quaternions.RemoveRange(quaternions.Count - sizeOfFloatingWindow / 2, sizeOfFloatingWindow / 2);
+            foreach (Vector3D vectorDisplacement in MathToolsToCalculatingTrajectory.CalculateTrajectoryPointsWithNoises(quaternions, noiseVectors, radius))
             {
                 planeXY.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Y));
                 planeXZ.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Z));
@@ -215,124 +276,7 @@ namespace TrajectoryOfSensorVisualization.ViewModel
                 trajectory3D.AddTriangleIndice(k);
                 trajectory3D.AddTriangleIndice(k + 1);
                 k += 2;
-                Debug.WriteLine($"{vectorDisplacement.X}, {vectorDisplacement.Y}, {vectorDisplacement.Z}");
             }
-        }
-        /// <summary>
-        /// Поворот векторов ускорений с помощью кватернионов
-        /// </summary>
-        /// <param name="accellerationVectors">Список векторов ускорений</param>
-        /// <param name="quaternions">Список кватернионов поворота</param>
-        /// <param name="gLength">Длина вектора ускорения свободного падения</param>
-        /// <returns>Список повёрнутых векторов ускорений</returns>
-        public List<Vector3D> RotateVectors(List<Vector3D> accellerationVectors, List<Quaternion> quaternions, double gLength)
-        {
-            List<Vector3D> result = new List<Vector3D>();
-            
-            for (int i = 0; i < accellerationVectors.Count; i++)
-            {
-                result.Add(TrajectoryCalculator.RotateVectorInSpace(accellerationVectors[i], quaternions[i]));
-            }
-            for (int i = 0; i < result.Count; i++)
-            {
-                Vector3D temporaryVector = new(0.0, 1.0, 0.0);
-                result[i] -= temporaryVector * gLength;
-            }
-            return result;
-        }
-        #endregion
-
-        #region Private Methods
-        private void CalculateTrajectory()
-        {
-            PlaneModel newPlaneXY = new(OxyColors.Green, "Y", OxyColors.Red, "X", -0.5, 0.5);
-            PlaneModel newPlaneXZ = new(OxyColors.Blue, "Z", OxyColors.Red, "X", -0.5, 0.5);
-            PlaneModel newPlaneYZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -0.5, 0.5);
-            Trajectory3DModel newTrajectoryInSpace = new(new(0, 0, 0));
-            List<Vector3D> accelerationVectors = new();
-            List<Quaternion> quaternions = new();
-            List<Vector3D> gyrVectors = new();
-            DataReader.ReadVectorsAndQuaternionsFromFile(filePath, ref accelerationVectors, ref gyrVectors, ref quaternions);
-            int sampleFreq = DataReader.ReadSampleFreqFromFile(filePath);
-            double gLength = DataReader.ReadGVectorLengthFromFile(filePath);
-            var accelerationVectorsRot = RotateVectors(accelerationVectors, quaternions, gLength);
-            double avgR = 0;
-            int count = 0;
-            for (int i = 0; i < 400; i += 10)
-            {
-                double r = TrajectoryCalculator.CalculateRadius(i, i + 100, accelerationVectorsRot, quaternions, sampleFreq);
-                avgR += r;
-                count++;
-            }
-            Debug.WriteLine($"Радиус = {avgR / count}");
-            DrawDisplacement(accelerationVectorsRot, sampleFreq, ref newPlaneXY, ref newPlaneXZ, ref newPlaneYZ, ref newTrajectoryInSpace);
-            PlaneXY = newPlaneXY;
-            PlaneXZ = newPlaneXZ;
-            PlaneYZ = newPlaneYZ;
-            TrajectoryInSpace = newTrajectoryInSpace;
-            //App.Current.Dispatcher.Invoke(() =>
-            //{
-            //    NewMethod(newPlaneXY, newPlaneXZ, newPlaneYZ, newTrajectoryInSpace);
-            //});
-        }
-
-        //private void NewMethod(PlaneModel p1, PlaneModel p2, PlaneModel p3, Trajectory3DModel trajectory)
-        //{
-        //    planeXY1 = p1;
-        //    planeXZ1 = p2;
-        //    planeYZ1 = p3;
-        //    trajectoryInSpace1 = trajectory;
-        //}
-        #endregion
-
-        #region Properties
-        /// <summary>
-        /// Возвращает/устанавливает график в плоскости XY
-        /// </summary>
-        public PlaneModel PlaneXY
-        {
-            get { return planeXY; }
-            set { planeXY = value; OnPropertyChanged(nameof(PlaneXY)); }
-        }
-        /// <summary>
-        /// Возвращает/устанавливает график в плоскости XZ
-        /// </summary>
-        public PlaneModel PlaneXZ
-        {
-            get { return planeXZ; }
-            set { planeXZ = value; OnPropertyChanged(nameof(PlaneXZ)); }
-        }
-        /// <summary>
-        /// Возвращает/устанавливает график в плоскости YZ
-        /// </summary>
-        public PlaneModel PlaneYZ
-        {
-            get { return planeYZ; }
-            set { planeYZ = value; OnPropertyChanged(nameof(PlaneYZ)); }
-        }
-        /// <summary>
-        /// Возвращает/устанавливает траекторию движения в пространстве датчика
-        /// </summary>
-        public Trajectory3DModel TrajectoryInSpace
-        {
-            get { return trajectoryInSpace; }
-            set { trajectoryInSpace = value; OnPropertyChanged(nameof(TrajectoryInSpace)); }
-        }
-        /// <summary>
-        /// Возвращает/устанавливает сферу, по которой движется датчик
-        /// </summary>
-        public SphereGeometry3D Sphere
-        {
-            get { return sphere; }
-            set { sphere = value; OnPropertyChanged(nameof(Sphere)); }
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string SelectedFilePath 
-        { 
-            get { return filePath; } 
-            set { filePath = value; OnPropertyChanged(nameof(SelectedFilePath)); } 
         }
         #endregion
 

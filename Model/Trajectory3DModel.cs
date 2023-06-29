@@ -28,13 +28,12 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <summary>
         /// Конструктор класса траектории в пространстве
         /// </summary>
-        /// <param name="initialPoint">Начальная точка траектории</param>
-        public Trajectory3DModel(Point3D initialPoint)
+        public Trajectory3DModel()
         {
             pointsInSpace = new();
             triangleIndices = new();
-            AddPointInSpace(initialPoint);
         }
+
         #endregion
 
         #region Public Methods
