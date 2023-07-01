@@ -24,30 +24,23 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <exception cref="Exception">Исключение при чтении файла или конвертации строк</exception>
         public static void ReadVectorsAndQuaternionsFromFile(string filePath, ref List<Vector3D> accVectors, ref List<Vector3D> gyrVectors, ref List<Quaternion> quaternions)
         {
-            try
+            using StreamReader reader = new(@$"{filePath}");
+            reader.ReadLine();
+            string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
+            int calibCount = Convert.ToInt32(headerLine[1]);
+            for (int i = 0; i < calibCount + 3; i++)
             {
-                using StreamReader reader = new(@$"{filePath}");
                 reader.ReadLine();
-                string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
-                int calibCount = Convert.ToInt32(headerLine[1]);
-                for (int i = 0; i < calibCount + 3; i++)
-                {
-                    reader.ReadLine();
-                }
-                while (!reader.EndOfStream)
-                {
-                    string line = reader.ReadLine();
-                    string[] separators = new string[] { ";" };
-                    line = line.Replace('.', ',');
-                    string[] data = line.Split(separators, StringSplitOptions.None);
-                    accVectors.Add(new() { X = Convert.ToDouble(data[0]), Y = Convert.ToDouble(data[1]), Z = Convert.ToDouble(data[2]) });
-                    gyrVectors.Add(new() { X = Convert.ToDouble(data[3]), Y = Convert.ToDouble(data[4]), Z = Convert.ToDouble(data[5]) });
-                    quaternions.Add(new() { X = Convert.ToDouble(data[7]), Y = Convert.ToDouble(data[8]), Z = Convert.ToDouble(data[9]), W = Convert.ToDouble(data[6]) });
-                }
             }
-            catch
+            while (!reader.EndOfStream)
             {
-                throw new Exception();
+                string line = reader.ReadLine();
+                string[] separators = new string[] { ";" };
+                line = line.Replace('.', ',');
+                string[] data = line.Split(separators, StringSplitOptions.None);
+                accVectors.Add(new() { X = Convert.ToDouble(data[0]), Y = Convert.ToDouble(data[1]), Z = Convert.ToDouble(data[2]) });
+                gyrVectors.Add(new() { X = Convert.ToDouble(data[3]), Y = Convert.ToDouble(data[4]), Z = Convert.ToDouble(data[5]) });
+                quaternions.Add(new() { X = Convert.ToDouble(data[7]), Y = Convert.ToDouble(data[8]), Z = Convert.ToDouble(data[9]), W = Convert.ToDouble(data[6]) });
             }
         }
         /// <summary>
@@ -58,31 +51,24 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <exception cref="Exception">Исключение при чтении файла или конвертации строк</exception>
         public static List<Vector3D> ReadAccVectorsFromFile(string filePath)
         {
-            try 
-            { 
-                using StreamReader reader = new(@$"{filePath}");
-                List<Vector3D> accVectors = new();
-                reader.ReadLine();
-                string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
-                int calibCount = Convert.ToInt32(headerLine[1]);
-                for (int i = 0; i < calibCount + 3; i++)
-                {
-                    reader.ReadLine();
-                }
-                while (!reader.EndOfStream)
-                {
-                    string line = reader.ReadLine();
-                    string[] separators = new string[] { ";" };
-                    line = line.Replace('.', ',');
-                    string[] data = line.Split(separators, StringSplitOptions.None);
-                    accVectors.Add(new() { X = Convert.ToDouble(data[0]), Y = Convert.ToDouble(data[1]), Z = Convert.ToDouble(data[2]) });
-                }
-                return accVectors;
-            }
-            catch
+            using StreamReader reader = new(@$"{filePath}");
+            List<Vector3D> accVectors = new();
+            reader.ReadLine();
+            string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
+            int calibCount = Convert.ToInt32(headerLine[1]);
+            for (int i = 0; i < calibCount + 3; i++)
             {
-                throw new Exception();
+                reader.ReadLine();
             }
+            while (!reader.EndOfStream)
+            {
+                string line = reader.ReadLine();
+                string[] separators = new string[] { ";" };
+                line = line.Replace('.', ',');
+                string[] data = line.Split(separators, StringSplitOptions.None);
+                accVectors.Add(new() { X = Convert.ToDouble(data[0]), Y = Convert.ToDouble(data[1]), Z = Convert.ToDouble(data[2]) });
+            }
+            return accVectors;
         }
         /// <summary>
         /// Функция для считывания векторов угловой скорости из файла
@@ -92,32 +78,24 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <exception cref="Exception">Исключение при чтении файла или конвертации строк</exception>
         public static List<Vector3D> ReadGyrVectorsFromFile(string filePath)
         {
-            try
+            using StreamReader reader = new(@$"{filePath}");
+            List<Vector3D> gyrVectors = new();
+            reader.ReadLine();
+            string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
+            int calibCount = Convert.ToInt32(headerLine[1]);
+            for (int i = 0; i < calibCount + 3; i++)
             {
-                using StreamReader reader = new(@$"{filePath}");
-                List<Vector3D> gyrVectors = new();
                 reader.ReadLine();
-                string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
-                int calibCount = Convert.ToInt32(headerLine[1]);
-                for (int i = 0; i < calibCount + 3; i++)
-                {
-                    reader.ReadLine();
-                }
-                while (!reader.EndOfStream)
-                {
-                    string line = reader.ReadLine();
-                    string[] separators = new string[] { ";" };
-                    line = line.Replace('.', ',');
-                    string[] data = line.Split(separators, StringSplitOptions.None);
-                    gyrVectors.Add(new() { X = Convert.ToDouble(data[3]), Y = Convert.ToDouble(data[4]), Z = Convert.ToDouble(data[5]) });
-                }
-                return gyrVectors;
             }
-            catch
+            while (!reader.EndOfStream)
             {
-                throw new Exception();
+                string line = reader.ReadLine();
+                string[] separators = new string[] { ";" };
+                line = line.Replace('.', ',');
+                string[] data = line.Split(separators, StringSplitOptions.None);
+                gyrVectors.Add(new() { X = Convert.ToDouble(data[3]), Y = Convert.ToDouble(data[4]), Z = Convert.ToDouble(data[5]) });
             }
-            
+            return gyrVectors;
         }
         /// <summary>
         /// Функция для считывания кватернионов из файла
@@ -127,32 +105,24 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <exception cref="Exception">Исключение при чтении файла или конвертации строк</exception>
         public static List<Quaternion> ReadQuaternionsFromFile(string filePath)
         {
-            try
+            using StreamReader reader = new(@$"{filePath}");
+            List<Quaternion> quaternions = new();
+            reader.ReadLine();
+            string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
+            int calibCount = Convert.ToInt32(headerLine[1]);
+            for (int i = 0; i < calibCount + 3; i++)
             {
-                using StreamReader reader = new(@$"{filePath}");
-                List<Quaternion> quaternions = new();
                 reader.ReadLine();
-                string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
-                int calibCount = Convert.ToInt32(headerLine[1]);
-                for (int i = 0; i < calibCount + 3; i++)
-                {
-                    reader.ReadLine();
-                }
-                while (!reader.EndOfStream)
-                {
-                    string line = reader.ReadLine();
-                    string[] separators = new string[] { ";" };
-                    line = line.Replace('.', ',');
-                    string[] data = line.Split(separators, StringSplitOptions.None);
-                    quaternions.Add(new() { X = Convert.ToDouble(data[7]), Y = Convert.ToDouble(data[8]), Z = Convert.ToDouble(data[9]), W = Convert.ToDouble(data[6]) });
-                }
-                return quaternions;
             }
-            catch
+            while (!reader.EndOfStream)
             {
-                throw new Exception();
+                string line = reader.ReadLine();
+                string[] separators = new string[] { ";" };
+                line = line.Replace('.', ',');
+                string[] data = line.Split(separators, StringSplitOptions.None);
+                quaternions.Add(new() { X = Convert.ToDouble(data[7]), Y = Convert.ToDouble(data[8]), Z = Convert.ToDouble(data[9]), W = Convert.ToDouble(data[6]) });
             }
-            
+            return quaternions;
         }
         #endregion
 
@@ -169,22 +139,14 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <exception cref="Exception">Исключение при чтении файла или конвертации строк</exception>
         public static void ReadHeaderInformation(string filePath, ref int sampleFreq, ref int calibCount, ref Vector3D gVector, ref double gVectorLength, ref Quaternion calibQuaternion)
         {
-            try
-            {
-                using StreamReader reader = new(@$"{filePath}");
-                reader.ReadLine();
-                string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
-                sampleFreq = Convert.ToInt32(headerLine[0]);
-                calibCount = Convert.ToInt32(headerLine[1]);
-                gVector = new() { X = Convert.ToDouble(headerLine[2]), Y = Convert.ToDouble(headerLine[3]), Z = Convert.ToDouble(headerLine[4]) };
-                gVectorLength = Convert.ToDouble(headerLine[5]);
-                calibQuaternion = new() { X = Convert.ToDouble(headerLine[7]), Y = Convert.ToDouble(headerLine[8]), Z = Convert.ToDouble(headerLine[9]), W = Convert.ToDouble(headerLine[6]) };
-            }
-            catch
-            {
-                throw new Exception();
-            }
-           
+            using StreamReader reader = new(@$"{filePath}");
+            reader.ReadLine();
+            string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
+            sampleFreq = Convert.ToInt32(headerLine[0]);
+            calibCount = Convert.ToInt32(headerLine[1]);
+            gVector = new() { X = Convert.ToDouble(headerLine[2]), Y = Convert.ToDouble(headerLine[3]), Z = Convert.ToDouble(headerLine[4]) };
+            gVectorLength = Convert.ToDouble(headerLine[5]);
+            calibQuaternion = new() { X = Convert.ToDouble(headerLine[7]), Y = Convert.ToDouble(headerLine[8]), Z = Convert.ToDouble(headerLine[9]), W = Convert.ToDouble(headerLine[6]) };
         }
         /// <summary>
         /// Функция для считывания кол-ва отсчётов в секунду из файла
@@ -194,19 +156,11 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <exception cref="Exception">Исключение при чтении файла или конвертации строк</exception>
         public static int ReadSampleFreqFromFile(string filePath)
         {
-            try
-            {
-                using StreamReader reader = new(@$"{filePath}");
-                reader.ReadLine();
-                string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
-                int sampleFreq = Convert.ToInt32(headerLine[0]);
-                return sampleFreq;
-            }
-            catch
-            {
-                throw new Exception();
-            }
-            
+            using StreamReader reader = new(@$"{filePath}");
+            reader.ReadLine();
+            string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
+            int sampleFreq = Convert.ToInt32(headerLine[0]);
+            return sampleFreq;
         }
         /// <summary>
         /// Функция для считывания кол-ва отсчётов на калибровку из файла
@@ -216,19 +170,11 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <exception cref="Exception">Исключение при чтении файла или конвертации строк</exception>
         public static int ReadCalibCountFromFile(string filePath)
         {
-            try
-            {
-                using StreamReader reader = new(@$"{filePath}");
-                reader.ReadLine();
-                string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
-                int calibCount = Convert.ToInt32(headerLine[1]);
-                return calibCount;
-            }
-            catch
-            {
-                throw new Exception();
-            }
-            
+            using StreamReader reader = new(@$"{filePath}");
+            reader.ReadLine();
+            string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
+            int calibCount = Convert.ToInt32(headerLine[1]);
+            return calibCount;
         }
         /// <summary>
         /// Функция для считывания вектора ускорения свободного падения из файла
@@ -238,19 +184,11 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <exception cref="Exception">Исключение при чтении файла или конвертации строк</exception>
         public static Vector3D ReadGVectorFromFile(string filePath)
         {
-            try
-            {
-                using StreamReader reader = new(@$"{filePath}");
-                reader.ReadLine();
-                string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
-                Vector3D gVector = new() { X = Convert.ToDouble(headerLine[2]), Y = Convert.ToDouble(headerLine[3]), Z = Convert.ToDouble(headerLine[4]) };
-                return gVector;
-            }
-            catch
-            {
-                throw new Exception();
-            }
-            
+            using StreamReader reader = new(@$"{filePath}");
+            reader.ReadLine();
+            string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
+            Vector3D gVector = new() { X = Convert.ToDouble(headerLine[2]), Y = Convert.ToDouble(headerLine[3]), Z = Convert.ToDouble(headerLine[4]) };
+            return gVector;
         }
         /// <summary>
         /// Функция для считывания длины вектора ускорения свободного падения из файла
@@ -260,19 +198,11 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <exception cref="Exception">Исключение при чтении файла или конвертации строк</exception>
         public static double ReadGVectorLengthFromFile(string filePath)
         {
-            try
-            {
-                using StreamReader reader = new(@$"{filePath}");
-                reader.ReadLine();
-                string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
-                double gVectorLength = Convert.ToDouble(headerLine[5]);
-                return gVectorLength;
-            }
-            catch
-            {
-                throw new Exception();
-            }
-            
+            using StreamReader reader = new(@$"{filePath}");
+            reader.ReadLine();
+            string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
+            double gVectorLength = Convert.ToDouble(headerLine[5]);
+            return gVectorLength;
         }
         /// <summary>
         /// Функция для считывания калибровочного кватерниона из файла
@@ -282,19 +212,11 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <exception cref="Exception">Исключение при чтении файла или конвертации строк</exception>
         public static Quaternion ReadCalibQuaternionFromFile(string filePath)
         {
-            try
-            {
-                using StreamReader reader = new(@$"{filePath}");
-                reader.ReadLine();
-                string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
-                Quaternion calibQuaternion = new() { X = Convert.ToDouble(headerLine[7]), Y = Convert.ToDouble(headerLine[8]), Z = Convert.ToDouble(headerLine[9]), W = Convert.ToDouble(headerLine[6]) };
-                return calibQuaternion;
-            }
-            catch
-            {
-                throw new Exception();
-            }
-            
+            using StreamReader reader = new(@$"{filePath}");
+            reader.ReadLine();
+            string[] headerLine = reader.ReadLine().ToString().Replace('.', ',').Split(';', StringSplitOptions.None);
+            Quaternion calibQuaternion = new() { X = Convert.ToDouble(headerLine[7]), Y = Convert.ToDouble(headerLine[8]), Z = Convert.ToDouble(headerLine[9]), W = Convert.ToDouble(headerLine[6]) };
+            return calibQuaternion;
         }
         #endregion
     }

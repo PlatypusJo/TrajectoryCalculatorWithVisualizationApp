@@ -95,8 +95,8 @@ namespace TrajectoryOfSensorVisualization.ViewModel
                 }
                 catch
                 {
-                    string message = "Неправильный формат введённых данных. В поле ввода \"Радиус сферы\" допустимы только действительные числа";
-                    string caption = "Ошибка в формате данных";
+                    const string message = "Неправильный формат введённых данных. В поле ввода \"Радиус сферы\" допустимы только действительные числа";
+                    const string caption = "Ошибка в формате данных";
                     MessageBoxButton button = MessageBoxButton.OK;
                     MessageBoxImage icon = MessageBoxImage.Error;
                     MessageBox.Show(message, caption, button, icon);
@@ -118,8 +118,8 @@ namespace TrajectoryOfSensorVisualization.ViewModel
                 }
                 catch
                 {
-                    string message = "Неправильный формат введённых данных. В поле ввода \"Плавающее окно\" допустимы только целые числа";
-                    string caption = "Ошибка в формате данных";
+                    const string message = "Неправильный формат введённых данных. В поле ввода \"Плавающее окно\" допустимы только целые числа";
+                    const string caption = "Ошибка в формате данных";
                     MessageBoxButton button = MessageBoxButton.OK;
                     MessageBoxImage icon = MessageBoxImage.Error;
                     MessageBox.Show(message, caption, button, icon);
@@ -141,8 +141,8 @@ namespace TrajectoryOfSensorVisualization.ViewModel
                 }
                 catch
                 {
-                    string message = "Неправильный формат введённых данных. В поле ввода \"Время интегрирования\" допустимы только действительные числа";
-                    string caption = "Ошибка в формате данных";
+                    const string message = "Неправильный формат введённых данных. В поле ввода \"Время интегрирования\" допустимы только действительные числа";
+                    const string caption = "Ошибка в формате данных";
                     MessageBoxButton button = MessageBoxButton.OK;
                     MessageBoxImage icon = MessageBoxImage.Error;
                     MessageBox.Show(message, caption, button, icon);
@@ -179,7 +179,7 @@ namespace TrajectoryOfSensorVisualization.ViewModel
                         fileDialog.Title = "Please pick a CSV source file";
 
                         bool? success = fileDialog.ShowDialog();
-                        if (success == true)
+                        if (success.HasValue && success.Value == true)
                         {
                             SelectedFilePath = fileDialog.FileName;
                         }
@@ -211,10 +211,10 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             PlaneModel newPlaneXZ = new(OxyColors.Blue, "Z", OxyColors.Red, "X", -radius, radius);
             PlaneModel newPlaneYZ = new(OxyColors.Blue, "Z", OxyColors.Green, "Y", -radius, radius);
             Trajectory3DModel newTrajectoryInSpace = new();
-            List<Vector3D> accelerationVectors = DataReader.ReadAccVectorsFromFile(SelectedFilePath);
-            List<Quaternion> quaternions = DataReader.ReadQuaternionsFromFile(SelectedFilePath);
-            int sampleFreq = DataReader.ReadSampleFreqFromFile(SelectedFilePath);
-            double gLength = DataReader.ReadGVectorLengthFromFile(SelectedFilePath);
+            List<Vector3D> accelerationVectors = new();
+            List<Quaternion> quaternions = new();
+            int sampleFreq = 0;
+            double gLength = 0;
             try
             {
                 accelerationVectors = DataReader.ReadAccVectorsFromFile(SelectedFilePath);
@@ -224,23 +224,29 @@ namespace TrajectoryOfSensorVisualization.ViewModel
             }
             catch
             {
-                string message = "Возможно данные в файле имеют некорректный вид.";
+                accelerationVectors = null;
+                quaternions = null;
+                string message = "Отсутствует файл для чтения или данные в файле имеют некорректный вид.";
                 string caption = "Ошибка при чтении файла";
                 MessageBoxButton button = MessageBoxButton.OK;
                 MessageBoxImage icon = MessageBoxImage.Error;
                 MessageBox.Show(message, caption, button, icon);
+                return;
             }
-            finally
+            List<Vector3D> accelerationVectorsRot = MathToolsFor3D.RotateVectorsInSpace(accelerationVectors, quaternions, gLength);
+            if (!CalculatePointsOfTrajectory(accelerationVectorsRot, quaternions, sampleFreq, 
+                newPlaneXY, newPlaneXZ, newPlaneYZ, newTrajectoryInSpace))
             {
-                List<Vector3D> accelerationVectorsRot = MathToolsToCalculatingTrajectory.RotateVectorsInSpace(accelerationVectors, quaternions, gLength);
-                CalculatePointsOfTrajectory(accelerationVectorsRot, quaternions, sampleFreq, newPlaneXY, newPlaneXZ, newPlaneYZ, newTrajectoryInSpace);
+                return;
+            }
+            else
+            {
                 PlaneXY = newPlaneXY;
                 PlaneXZ = newPlaneXZ;
                 PlaneYZ = newPlaneYZ;
                 TrajectoryInSpace = newTrajectoryInSpace;
                 Sphere = new(radius, Color.FromRgb(255, 0, 0), 0.3);
             }
-            
         }
         /// <summary>
         /// Заполняет точками перемещение датчика в пространстве
@@ -252,20 +258,38 @@ namespace TrajectoryOfSensorVisualization.ViewModel
         /// <param name="planeXZ">Плоскость XZ</param>
         /// <param name="planeYZ">Плоскость YZ</param>
         /// <param name="trajectory3D">Траектория движения датчика в пространстве</param>
-        private void CalculatePointsOfTrajectory(List<Vector3D> accelerationVectors, List<Quaternion> quaternions, int sampleFreq, PlaneModel planeXY, PlaneModel planeXZ, PlaneModel planeYZ, Trajectory3DModel trajectory3D)
+        private bool CalculatePointsOfTrajectory(List<Vector3D> accelerationVectors, List<Quaternion> quaternions, int sampleFreq, PlaneModel planeXY, PlaneModel planeXZ, PlaneModel planeYZ, Trajectory3DModel trajectory3D)
         {
             int k = 0;
-            List<Vector3D> displacementVectors = MathToolsToCalculatingTrajectory.CalculateIntegralAvgRectangle(accelerationVectors, 0, (int)(integrationTime * sampleFreq), sampleFreq);
-            List<Vector3D> filtredVectors = MathToolsToCalculatingTrajectory.FiltrationByFloatingWindow(displacementVectors, sizeOfFloatingWindow);
-            List<Vector3D> noiseVectors = MathToolsToCalculatingTrajectory.CalculateListOfNoiseVectors(displacementVectors, filtredVectors);
-            quaternions.RemoveRange(quaternions.Count - sizeOfFloatingWindow / 2, sizeOfFloatingWindow / 2);
-            foreach (Vector3D vectorDisplacement in MathToolsToCalculatingTrajectory.CalculateTrajectoryPointsWithNoises(quaternions, noiseVectors, radius))
+            List<Vector3D> displacementVectors = new();
+            List<Vector3D> filtredVectors = new();
+            List<Vector3D> noiseVectors = new();
+            try
             {
-                planeXY.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Y));
-                planeXZ.AddDataPoint(new(vectorDisplacement.X, vectorDisplacement.Z));
-                planeYZ.AddDataPoint(new(vectorDisplacement.Y, vectorDisplacement.Z));
-                trajectory3D.AddPointInSpace((Point3D)vectorDisplacement);
-                trajectory3D.AddPointInSpace(new(vectorDisplacement.X, vectorDisplacement.Y - 0.02, vectorDisplacement.Z));
+                displacementVectors = MathToolsFor3D.CalculateIntegralAvgRectangle(accelerationVectors, 0, (int)(integrationTime * sampleFreq), sampleFreq);
+                filtredVectors = MathToolsFor3D.FiltrationByFloatingWindow(displacementVectors, sizeOfFloatingWindow);
+                noiseVectors = MathToolsFor3D.CalculateListOfNoiseVectors(displacementVectors, filtredVectors);
+            }
+            catch
+            {
+                displacementVectors = null;
+                filtredVectors = null;
+                noiseVectors = null;
+                string message = "Размер окна превышает кол-во отсчётов или время интегрирования превышает время в файле.";
+                string caption = "Ошибка при интегрировании";
+                MessageBoxButton button = MessageBoxButton.OK;
+                MessageBoxImage icon = MessageBoxImage.Error;
+                MessageBox.Show(message, caption, button, icon);
+                return false;
+            }
+            quaternions.RemoveRange(noiseVectors.Count, quaternions.Count - noiseVectors.Count);
+            foreach (Vector3D displacementVector in MathToolsFor3D.CalculateTrajectoryPointsWithNoise(quaternions, noiseVectors, radius))
+            {
+                planeXY.AddDataPoint(new(displacementVector.X, displacementVector.Y));
+                planeXZ.AddDataPoint(new(displacementVector.X, displacementVector.Z));
+                planeYZ.AddDataPoint(new(displacementVector.Y, displacementVector.Z));
+                trajectory3D.AddPointInSpace((Point3D)displacementVector);
+                trajectory3D.AddPointInSpace(new(displacementVector.X, displacementVector.Y - 0.02, displacementVector.Z));
                 if (k > 0)
                 {
                     trajectory3D.AddTriangleIndice(k);
@@ -277,6 +301,7 @@ namespace TrajectoryOfSensorVisualization.ViewModel
                 trajectory3D.AddTriangleIndice(k + 1);
                 k += 2;
             }
+            return true;
         }
         #endregion
 

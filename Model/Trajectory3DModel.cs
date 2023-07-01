@@ -41,30 +41,30 @@ namespace TrajectoryOfSensorVisualization.Model
         /// Добавляет точку в пространстве в коллекцию точек
         /// </summary>
         /// <param name="pointInSpace">Точка в пространстве</param>
-        public void AddPointInSpace(Point3D pointInSpace) => PointsInSpace.Add(pointInSpace);
+        public void AddPointInSpace(Point3D pointInSpace) => PointsInSpace?.Add(pointInSpace);
         /// <summary>
         /// Удаляет точку в пространстве из коллекции точек
         /// </summary>
         /// <param name="pointInSpace">Точка в пространстве</param>
-        public void RemovePointInSpace(Point3D pointInSpace) => PointsInSpace.Remove(pointInSpace);
+        public void RemovePointInSpace(Point3D pointInSpace) => PointsInSpace?.Remove(pointInSpace);
         /// <summary>
         /// Удаляет все точки из коллекции
         /// </summary>
-        public void RemoveAllPoints() => PointsInSpace.Clear();
+        public void RemoveAllPoints() => PointsInSpace?.Clear();
         /// <summary>
         /// Добавляет индекс треугольника в коллекцию индексов треугольников
         /// </summary>
         /// <param name="index">Индекс треугольника</param>
-        public void AddTriangleIndice(int index) => TriangleIndices.Add(index);
+        public void AddTriangleIndice(int index) => TriangleIndices?.Add(index);
         /// <summary>
         /// Удаляет индекс треугольника из коллекции индексов треугольников
         /// </summary>
         /// <param name="index">Индекс треугольника</param>
-        public void RemoveTriangleIndice(int index) => TriangleIndices.Remove(index);
+        public void RemoveTriangleIndice(int index) => TriangleIndices?.Remove(index);
         /// <summary>
         /// Удаляет все индексы треугольников из коллекции индексов треугольников
         /// </summary>
-        public void RemoveAllIndices() => TriangleIndices.Clear();
+        public void RemoveAllIndices() => TriangleIndices?.Clear();
         #endregion
 
         #region Properties

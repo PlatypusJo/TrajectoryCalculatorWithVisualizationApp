@@ -13,7 +13,7 @@ namespace TrajectoryOfSensorVisualization.Model
     /// <summary>
     /// Статический класс для вычисления положения датчика в пространстве и его траектории движения
     /// </summary>
-    public static class MathToolsToCalculatingTrajectory
+    public static class MathToolsFor3D
     {
         #region Methods to work with angles
         /// <summary>
@@ -79,7 +79,7 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <param name="alphaAngle">Угол альфа в радианах</param>
         /// <param name="betaAngle">Угол бета в радианах</param>
         /// <returns>Координату X положения датчика</returns>
-        public static double CalculateLocationCoordinateXInSphericalCoordinates(double radiusOfSphere, double alphaAngle, double betaAngle) => radiusOfSphere * Math.Sin(alphaAngle) * Math.Cos(betaAngle);
+        public static double CalcCoordinateXInSphericalCoordinates(double radiusOfSphere, double alphaAngle, double betaAngle) => radiusOfSphere * Math.Sin(alphaAngle) * Math.Cos(betaAngle);
         /// <summary>
         /// Функция для вычисления координаты Y положения датчика в сферических координатах
         /// </summary>
@@ -87,7 +87,7 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <param name="alphaAngle">Угол альфа в радианах</param>
         /// <param name="betaAngle">Угол бета в радианах</param>
         /// <returns>Координату Y положения датчика</returns>
-        public static double CalculateLocationCoordinateYInSphericalCoordinates(double radiusOfSphere, double alphaAngle, double betaAngle) => radiusOfSphere * Math.Sin(alphaAngle) * Math.Sin(betaAngle);
+        public static double CalcCoordinateYInSphericalCoordinates(double radiusOfSphere, double alphaAngle, double betaAngle) => radiusOfSphere * Math.Sin(alphaAngle) * Math.Sin(betaAngle);
         /// <summary>
         /// Функция для вычисления координаты Z положения датчика в сферических координатах
         /// </summary>
@@ -95,7 +95,7 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <param name="alphaAngle">Угол альфа в радианах</param>
         /// <param name="betaAngle">Угол бета в радианах</param>
         /// <returns>Координату Z положения датчика</returns>
-        public static double CalculateLocationCoordinateZInSphericalCoordinates(double radiusOfSphere, double alphaAngle, double betaAngle) => radiusOfSphere * Math.Cos(alphaAngle);
+        public static double CalcCoordinateZInSphericalCoordinates(double radiusOfSphere, double alphaAngle, double betaAngle) => radiusOfSphere * Math.Cos(alphaAngle);
         /// <summary>
         /// Функция для вычисления положение датчика в пространстве в сферических координатах
         /// </summary>
@@ -103,12 +103,12 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <param name="alphaAngle">Угол альфа в радианах</param>
         /// <param name="betaAngle">Угол бета в радианах</param>
         /// <returns>Положение датчика в виде Vector3D</returns>
-        public static Vector3D CalculateLocationInSpaceInSphericalCoordinates(double radiusOfSphere, double alphaAngle, double betaAngle)
+        public static Vector3D CalcLocationInSphericalCoordinates(double radiusOfSphere, double alphaAngle, double betaAngle)
         {
             Vector3D point3D;
-            point3D.X = CalculateLocationCoordinateXInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
-            point3D.Y = CalculateLocationCoordinateYInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
-            point3D.Z = CalculateLocationCoordinateZInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
+            point3D.X = CalcCoordinateXInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
+            point3D.Y = CalcCoordinateYInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
+            point3D.Z = CalcCoordinateZInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
             return point3D;
         }
         /// <summary>
@@ -120,9 +120,9 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <param name="betaAngle">Угол бета в радианах</param>
         public static void CalculateLocationInSpaceInSphericalCoordinates(ref Vector3D point3D, double radiusOfSphere, double alphaAngle, double betaAngle)
         {
-            point3D.X = CalculateLocationCoordinateXInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
-            point3D.Y = CalculateLocationCoordinateYInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
-            point3D.Z = CalculateLocationCoordinateZInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
+            point3D.X = CalcCoordinateXInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
+            point3D.Y = CalcCoordinateYInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
+            point3D.Z = CalcCoordinateZInSphericalCoordinates(radiusOfSphere, alphaAngle, betaAngle);
         }
         /// <summary>
         /// Функция для вычисления положения датчика в пространстве по радиусу и углам
@@ -145,7 +145,7 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <param name="rotationQuaternion">Кватернион поворота</param>
         /// <param name="radiusOfSphere">Радиус сферы</param>
         /// <returns>Положение датчика в пространстве в локальных координатах</returns>
-        public static Vector3D CalculateLocationInSpaceInLocalCoordinates(Quaternion rotationQuaternion, double radiusOfSphere)
+        public static Vector3D CalculateSensorPosition(Quaternion rotationQuaternion, double radiusOfSphere)
         {
             Vector3D yAxis = new(0, 1, 0);
             Vector3D yAxisInLocal = RotateVectorInSpace(yAxis, rotationQuaternion.ToInverse());
@@ -205,10 +205,9 @@ namespace TrajectoryOfSensorVisualization.Model
             {
                 rotatedVectors.Add(RotateVectorInSpace(vectors[i], quaternions[i]));
             }
-
+            Vector3D temporaryVector = new(0.0, 1.0, 0.0);
             for (int i = 0; i < rotatedVectors.Count; i++)
             {
-                Vector3D temporaryVector = new(0.0, 1.0, 0.0);
                 rotatedVectors[i] -= temporaryVector * gLength;
             }
 
@@ -216,7 +215,7 @@ namespace TrajectoryOfSensorVisualization.Model
         }
         #endregion
 
-        #region Methods to calculate integrals of sensor
+        #region Methods to calculate integrals
         /// <summary>
         /// Функция для вычисления двойного интеграла, которая возвращает перемещение датчика
         /// </summary>
@@ -363,12 +362,12 @@ namespace TrajectoryOfSensorVisualization.Model
         /// <param name="noiseVectors">Список векторов "шума"</param>
         /// <param name="radiusOfSphere">Радиус сферы</param>
         /// <returns>Список векторов перемещения с шумами</returns>
-        public static List<Vector3D> CalculateTrajectoryPointsWithNoises(List<Quaternion> rotationQuaternions, List<Vector3D> noiseVectors, double radiusOfSphere)
+        public static List<Vector3D> CalculateTrajectoryPointsWithNoise(List<Quaternion> rotationQuaternions, List<Vector3D> noiseVectors, double radiusOfSphere)
         {
             List<Vector3D> points = new();
             for (int i = 0; i < rotationQuaternions.Count; i++)
             {
-                points.Add(CalculateLocationInSpaceInLocalCoordinates(rotationQuaternions[i], radiusOfSphere));
+                points.Add(CalculateSensorPosition(rotationQuaternions[i], radiusOfSphere));
             }
             for (int i = 0; i < noiseVectors.Count; i++)
             {
@@ -385,7 +384,7 @@ namespace TrajectoryOfSensorVisualization.Model
         public static List<Vector3D> FiltrationByFloatingWindow(List<Vector3D> displacementVectors, int sizeOfWindow)
         {
             int remainder = sizeOfWindow / 2;
-            List<Vector3D> averageVectors = new();
+            List<Vector3D> filtredDisplacementVectors = new();
             Vector3D sum;
             for (int i = 0; i < displacementVectors.Count - sizeOfWindow; i++)
             {
@@ -394,14 +393,14 @@ namespace TrajectoryOfSensorVisualization.Model
                 {
                     sum += displacementVectors[j];
                 }
-                averageVectors.Add(sum / sizeOfWindow);
+                filtredDisplacementVectors.Add(sum / sizeOfWindow);
             }
             for (int i = 0; i < remainder; i++)
             {
-                averageVectors.Insert(0, averageVectors[0]);
-                averageVectors.Add(averageVectors.Last());
+                filtredDisplacementVectors.Insert(0, filtredDisplacementVectors[0]);
+                filtredDisplacementVectors.Add(filtredDisplacementVectors.Last());
             }
-            return averageVectors;
+            return filtredDisplacementVectors;
         }
         /// <summary>
         /// Функция для нахождения "шумов" при перемещении
